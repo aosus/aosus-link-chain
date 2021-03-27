@@ -81,5 +81,10 @@ Usage
 See `linkchanbot(1)` or `linkchanbot --help`.
 
 
-  [xdg]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+Resources
+---------
+
+- License: GNU Affero General Public License
+- Project page: <https://sr.ht/~torresjrjr/linkchanbot>
+- Mailing list: <~torresjrjr/linkchanbot@lists.sr.ht> (patches & discussion)
 
