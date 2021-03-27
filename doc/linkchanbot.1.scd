@@ -36,7 +36,7 @@ from _$XDG_CONFIG_HOME/linkchan_ (defaults to _$HOME/.config/linkchan_).
 *linkchanbot* will copy missing configuration files
 from _/etc/local/share/linkchanbot_.
 
-_auth.cfg_
+_bot.cfg_
 	Defines the _token_ and _admin_ variables.
 
 	_token_

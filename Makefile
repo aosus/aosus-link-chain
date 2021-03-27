@@ -29,7 +29,7 @@ install: all
 	mkdir -m755 -p $(DESTDIR)$(BINDIR) $(DESTDIR)$(SHAREDIR) $(DESTDIR)$(MANDIR)/man1
 	install -m755 linkchanbot $(DESTDIR)$(BINDIR)/linkchanbot
 	install -m644 linkchanbot.1 $(DESTDIR)$(MANDIR)/man1/linkchanbot.1
-	install -m644 sample.config/auth.cfg $(DESTDIR)$(SHAREDIR)/auth.cfg
+	install -m644 sample.config/bot.cfg $(DESTDIR)$(SHAREDIR)/bot.cfg
 	install -m644 sample.config/alts.json $(DESTDIR)$(SHAREDIR)/alts.json
 	install -m644 sample.config/services.json $(DESTDIR)$(SHAREDIR)/services.json
 	install -m644 sample.config/queries.json $(DESTDIR)$(SHAREDIR)/queries.json
@@ -37,7 +37,7 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/linkchanbot
 	$(RM) $(DESTDIR)$(MANDIR)/man1/linkchanbot.1
-	$(RM) $(DESTDIR)$(SHAREDIR)/auth.cfg
+	$(RM) $(DESTDIR)$(SHAREDIR)/bot.cfg
 	$(RM) $(DESTDIR)$(SHAREDIR)/alts.json
 	$(RM) $(DESTDIR)$(SHAREDIR)/services.json
 	$(RM) $(DESTDIR)$(SHAREDIR)/queries.json

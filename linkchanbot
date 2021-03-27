@@ -108,7 +108,7 @@ def init(args):
     config_dir.mkdir(parents=True, exist_ok=True)  # EFFECT
     sys_config_dir = pathlib.Path('/usr/local/share/linkchanbot')
 
-    config_files = ('auth.cfg', 'alts.json', 'services.json', 'queries.json')
+    config_files = ('bot.cfg', 'alts.json', 'services.json', 'queries.json')
 
     # Copy system global config files to local XDG config dir.
     # Fail if files not found.
@@ -146,11 +146,11 @@ def init(args):
     TOKEN = os.getenv('LINKCHAN_TOKEN')
     ADMIN = os.getenv('LINKCHAN_ADMIN')
 
-    AUTH = configparser.ConfigParser()
-    AUTH.read(config_dir/'auth.cfg')
+    BOT_CFG = configparser.ConfigParser()
+    BOT_CFG.read(config_dir/'bot.cfg')
 
-    TOKEN = TOKEN or AUTH.get("auth", "token", fallback=False)
-    ADMIN = ADMIN or AUTH.get("auth", "admin", fallback=False)
+    TOKEN = TOKEN or BOT_CFG.get("auth", "token", fallback=False)
+    ADMIN = ADMIN or BOT_CFG.get("auth", "admin", fallback=False)
 
     if not TOKEN:
         stderr("Error: No bot token provided")

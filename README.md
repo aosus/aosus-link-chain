@@ -54,7 +54,7 @@ Configuration
 ### Server
 
 Add the required bot token (and optionally an admin username)
-either in `auth.cfg` in the linkchan config directory
+either in `bot.cfg` in the linkchan config directory
 (`$XDG_CONFIG_HOME/linkchan` or `$HOME/.config/linkchan`):
 
 	[auth]
