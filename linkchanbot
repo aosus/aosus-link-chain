@@ -1,0 +1,717 @@
+#!/usr/bin/python
+"""
+This is a Telegram Bot which sanitises and substitutes share links
+for lightweight, privacy respecting proxy alternatives.
+"""
+
+from telegram import (
+    MessageEntity, ParseMode,
+    InlineQueryResultArticle, InputTextMessageContent,
+    InlineKeyboardMarkup, InlineKeyboardButton,
+)
+from telegram.ext import (
+    Updater, Filters,
+    MessageHandler, CommandHandler,
+    InlineQueryHandler, ChosenInlineResultHandler,
+)
+from telegram.constants import MAX_INLINE_QUERY_RESULTS as MAX_RESULTS
+from telegram import error
+
+from urllib.parse import urlparse, urlencode, parse_qs
+import argparse
+import configparser
+import functools
+import json
+import logging
+import os
+import pathlib
+import random
+import shutil
+import signal
+import sys
+import threading
+
+
+# Constants
+
+VERSION = "1.0.0"
+
+TEMPLATE = """
+{new}
+[source]({old})
+"""
+
+EXAMPLES = {
+    "Twitter": [
+        "https://twitter.com/anvxmes/status/1375175567587356673",
+        "https://twitter.com/Chrisvb700/status/1373169970117496833",
+        "https://twitter.com/HdWallpaperCart/status/1374405341954285572",
+    ],
+    "YouTube": [
+        "https://www.youtube.com/watch?v=J---aiyznGQ#",
+        "https://www.youtube.com/watch?v=KmtzQCSh6xk",
+        "https://www.youtube.com/watch?v=9Gj47G2e1Jc",
+    ],
+    "Instagram": [
+        "https://www.instagram.com/p/B-b-POVFb1r/",
+        "https://www.instagram.com/p/CMW0Fx6lum6/",
+        "https://www.instagram.com/p/CL_vMidl_W2/",
+    ],
+    "Reddit": [
+        "https://www.reddit.com/r/wallpaper/comments/mctm44/dope19201080/",
+        "https://www.reddit.com/r/wallpaper/comments/m98fnz/great_art_by_mike_fazbear_3840x2160/",
+        "https://www.reddit.com/r/reddit.com/comments/17913/reddit_now_supports_comments/c51/",
+    ],
+}
+
+
+# Initialisation
+
+def args():
+    """
+    Parse command-line arguments. Provide basic help interface.
+    """
+    parser = argparse.ArgumentParser(
+        prog = "linkchanbot",
+        formatter_class = argparse.RawDescriptionHelpFormatter,
+        description = \
+            "A Telegram bot that substitutes common share link with\n"
+            "lightweight, privacy respecting proxy alternatives.",
+        epilog = f"linkchanbot {VERSION}"
+    )
+    parser.add_argument('-v', '--version', help='print version and exit', action='store_true')
+    parser.add_argument('-l', '--logfile', help='specify the log file')
+
+    args = parser.parse_args()
+
+    if args.version:
+        stderr(f"linkchanbot {VERSION}")
+        exit(0)
+
+    return args
+
+
+def init(args):
+    """
+    Loads configuration from config files and environment variables.
+    To be called before main logic.
+
+    Has side effects.  See globals below.
+    """
+    # Filesystem
+    cache_home = pathlib.Path(os.getenv('XDG_CACHE_HOME', os.getenv('HOME') + '/.cache'))
+    cache_dir = cache_home/'linkchan'
+    cache_dir.mkdir(parents=True, exist_ok=True)  # EFFECT
+
+    config_home = pathlib.Path(os.getenv('XDG_CONFIG_HOME', os.getenv('HOME') + '/.config'))
+    config_dir = config_home/'linkchan'
+    config_dir.mkdir(parents=True, exist_ok=True)  # EFFECT
+    sys_config_dir = pathlib.Path('/usr/local/share/linkchanbot')
+
+    config_files = ('auth.cfg', 'alts.json', 'services.json', 'queries.json')
+
+    # Copy system global config files to local XDG config dir.
+    # Fail if files not found.
+    for file in config_files:
+        locfile = config_dir/file
+        sysfile = sys_config_dir/file
+
+        if locfile.is_file():
+            continue
+        else:
+            if sysfile.is_file():
+                shutil.copy(sysfile, locfile)
+            else:
+                stderr(
+                    f"Error: config file '{file}' not found in"
+                    "'{config_dir}' or '{sys_config_dir}'",
+                )
+                exit(1)
+
+    # Logging
+    LOGFILE = args.logfile or os.getenv('LINKCHAN_LOGFILE') or cache_dir/'log'
+
+    try:
+        logging.basicConfig(
+            filename = LOGFILE,
+            filemode = 'a',
+            format   = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            level    = logging.INFO,
+        )
+    except FileNotFoundError as e:
+        stderr("Error: logfile:", e)
+        exit(1)
+
+    # Config
+    TOKEN = os.getenv('LINKCHAN_TOKEN')
+    ADMIN = os.getenv('LINKCHAN_ADMIN')
+
+    AUTH = configparser.ConfigParser()
+    AUTH.read(config_dir/'auth.cfg')
+
+    TOKEN = TOKEN or AUTH.get("auth", "token", fallback=False)
+    ADMIN = ADMIN or AUTH.get("auth", "admin", fallback=False)
+
+    if not TOKEN:
+        stderr("Error: No bot token provided")
+        exit(1)
+
+    global ALTS
+    global SERVICES
+    global QUERIES
+
+    try:
+        with open(config_dir/'alts.json', 'r') as file:
+            ALTS = json.load(file)
+        with open(config_dir/'services.json', 'r') as file:
+            SERVICES = json.load(file)
+        with open(config_dir/'queries.json', 'r') as file:
+            QUERIES = json.load(file)
+    except FileNotFoundError as e:
+        stderr("Error: Missing config file:", e)
+        exit(1)
+    except json.decoder.JSONDecodeError as e:
+        stderr(
+            f"Error: JSON syntax error in '{file.name}':", e,
+        )
+        exit(1)
+
+    return TOKEN, ADMIN, LOGFILE
+
+
+
+# Util
+
+def stderr(*args, **kwargs):
+    """
+    Prints to stderr.
+    """
+    print(file=sys.stderr, *args, **kwargs)
+
+def logger(old_cb_func):
+    """
+    Wraps callback functions, logs incomming telegram updates.
+    """
+    @functools.wraps(old_cb_func)
+    def new_cb_func(upd, ctx, **kwargs):
+        if upd.message and upd.message.text:
+            status = mk_status(upd, 'msg', '<:', oneline(upd.message.text))
+        elif upd.message and upd.message.caption:
+            status = mk_status(upd, 'cap', '<:', oneline(upd.message.caption))
+        elif upd.message:
+            status = mk_status(upd, 'msg', '#:', upd.effective_message)
+        elif upd.chosen_inline_result:
+            status = mk_status(upd, 'cir', '::', oneline(upd.chosen_inline_result.result_id))
+        elif upd.inline_query:
+            status = mk_status(upd, 'ilq', '?:', oneline(upd.inline_query.query))
+        else:
+            status = mk_status(upd, 'ukn', '#:', upd.effective_message)
+
+        logging.info(status)
+        print(status)
+
+        return old_cb_func(upd, ctx, **kwargs)
+
+    return new_cb_func
+
+
+def mk_status(upd, utype, dl='<<', text=None):
+    """
+    Prepares a standardised string for logging.
+    Called by wrapped callbacks (see logger())
+    or by callbacks for terminal output.
+    """
+    uid    = upd.update_id
+    user_id = upd.effective_user.id
+    user_name = upd.effective_user.name
+
+    chat = upd.effective_chat
+    if chat:
+        chat_id = chat.id
+        chat_name = chat.link or chat.title or chat.full_name
+        chat_name = chat_name.replace('https://t.me/', '@')
+    else:
+        chat_id = '#'
+        chat_name = '#'
+
+    if not text:
+        text = upd.effective_message
+
+    status = f"{uid} [{utype}] - {user_id} <{user_name}> - {chat_id} ({chat_name}) - {dl} {text}"
+    return status
+
+
+@functools.cache
+def mk_newlinks(link):
+    """
+    The core logic of link substitution.
+    Given a link, returns either:
+        [str...]    A list of new links.
+        [False]     A list with a single False element.
+    """
+    # Prepare and parse link string
+    if not link.startswith('https://') and not link.startswith('http://'):
+        link = 'https://' + link
+
+    url = urlparse(link)
+
+    # Enforce HTTPS
+    url = url._replace(scheme='https')
+
+    # Recognise service
+    if url.netloc in SERVICES.keys():
+        service = url.netloc
+    else:
+        for main, others in SERVICES.items():
+            if url.netloc in others:
+                service = main
+                break
+        else:
+            # Fail if service is unrecognised
+            return [False]
+
+    # Keep only allowed URL queries
+    allowed_queries = QUERIES.get(service) or []
+    old_queries = parse_qs(url.query, keep_blank_values=True)
+    new_queries = {
+        query:v for (query,v) in old_queries.items()
+        if query in allowed_queries
+    }
+    url = url._replace(
+        query = urlencode(new_queries, doseq=True)
+    )
+
+    # Find alts for replacing `service`
+    applicable_alts = {
+        altsite: alt for (altsite, alt) in ALTS.items()
+        if alt['service'] == service
+    }
+
+    # Make new substitutes
+    newlinks = list(map(
+        lambda newdomain: url._replace(netloc=newdomain).geturl(),
+        applicable_alts.keys()
+    ))
+
+    return newlinks
+
+
+@functools.cache
+def oneline(s: str) -> str:
+    """
+    Converts newlines and tabs to ASCII representations.
+    """
+    s = s.replace('\\', '\\\\')
+    return s.replace('\n', '\\n').replace('\t', '\\t')
+
+
+# Callback Handlers
+
+@logger
+def cb_start(upd, ctx):
+    """
+    /start callback
+    """
+
+    # If user pressed "See examples", they were sent to bot PMs
+    # to /start with the payload "examples".
+    if ctx.args and ctx.args[0] == 'examples':
+        examples(upd, ctx)
+        return
+
+    BOT_USERNAME = ctx.bot.get_me().username
+
+    # outgoing text
+    msg = f"""
+@{BOT_USERNAME} cleans & proxies your share links.
+I support Twitter, YouTube, Instagram and Reddit.
+
+*Try inline*
+    Type:  `@{BOT_USERNAME} <link>`
+    [See examples](t.me/{BOT_USERNAME}?start=examples).
+
+*Try bot PMs*
+    [Send me](t.me/{BOT_USERNAME}) a link.
+
+*Try group chats*
+    [Add me](t.me/{BOT_USERNAME}?startgroup=1) and promote me to admin, then share links.
+
+See /help or /about
+"""
+
+    # Inline keyboard with "Try inline" button.
+    # See: https://core.telegram.org/bots/api#inlinekeyboardbutton
+    reply_markup = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                'Try inline',
+                # Launches inline mode on button press with no query
+                switch_inline_query_current_chat = '',
+            ),
+        ],
+    ])
+
+    # Send message
+    upd.message.reply_text(
+        msg,
+        disable_web_page_preview = True,
+        parse_mode = ParseMode.MARKDOWN,
+        reply_markup = reply_markup,
+    )
+
+
+def cb_help(upd, ctx):
+    """
+    /help callback
+    """
+    BOT_USERNAME = ctx.bot.get_me().username
+
+    # Outgoing text
+    msg = f"""
+*DESCRIPTION*
+@{BOT_USERNAME} substitutes the share links of popular services for lightweight and privacy respecting alternatives, and sanitises unnecesary queries and trackers.
+
+*USAGE*
+Inline
+    Type:  `@{BOT_USERNAME} <link>`
+Bot PMs
+    Send any text with links.
+Group chats
+    Add me and promote me to admin.
+
+*SUPPORTED SERVICES*
+- twitter.com => Nitter (nitter.net)
+- youtube.com => Inividious (invidio.us)
+- instagram.com => Bibliogram (bibliogram.art)
+- reddit.com => Teddit, Old Reddit (teddit.net, old.reddit.com)
+
+*NOTES*
+For in-chat replies, default proxies are used.  For inline queries, a menu of proxies are available.  To cycle through proxy menus, append '#' to your link.
+
+All URL query parameters for all domains are removed, except for whitelisted queries per service.
+
+*PRIVACY*
+This bot needs admin privileges to access group chat messages.  The official instance (@linkchanbot) only logs messages with links, but be wary of other instances with modified source code.
+
+This bot receives no chat data when used in inline mode, only the user data of the user who is using inline mode.  Use inline mode for ultimate privacy.
+"""
+
+    # Send message
+    upd.message.reply_text(
+        msg,
+        disable_web_page_preview = True,
+        parse_mode = ParseMode.MARKDOWN
+    )
+
+
+@logger
+def cb_about(upd, ctx):
+    """
+    /about callback
+    """
+    BOT_USERNAME = ctx.bot.get_me().username
+
+    # Outgoing text
+    msg = f"""
+@{BOT_USERNAME} (@linkchanbot)
+
+Version
+    {VERSION}
+Source code
+    https://sr.ht/~torresjrjr/linkchanbot
+Maintainer
+    @torresjrjr <b@torresjrjr.com>
+License
+    GNU Affero General Public License
+"""
+
+    # Send message
+    upd.message.reply_text(
+        msg,
+        parse_mode = ParseMode.MARKDOWN
+    )
+
+
+def examples(upd, ctx):
+    """
+    Returns an inline keyboard of examples of inline queries.
+    Called when user sends /start with payload "examples".
+    See cb_start().
+    """
+
+    # Inline keyboard with a button for each example in `EXAMPLES`.
+    # See: https://core.telegram.org/bots/api#inlinekeyboardbutton
+    reply_markup = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                service,
+                # Lauches inline mode on button press
+                # with example as the query.
+                switch_inline_query_current_chat = links[0],
+            )
+        ] \
+            for service, links in EXAMPLES.items()
+    ])
+
+    # Send message
+    upd.message.reply_text(
+        "Try inline query examples",
+        parse_mode = ParseMode.MARKDOWN,
+        reply_markup = reply_markup,
+    )
+
+
+
+@logger
+def cb_link_handler(upd, ctx):
+    """
+    Handles messages with links (see main > MessageHandler).
+    Replies with `TEMPLATE` with new links.
+    """
+    links = []
+
+    # Telegram returns message metadata called 'entities'
+    # (commands, formatted text, links, etc.).
+    # We extract the link entities.
+    entities = {}
+    entities.update(upd.message.parse_entities())
+    entities.update(upd.message.parse_caption_entities())
+
+    for ent, link in entities.items():
+        link = oneline(link)
+
+        if ent['type'] == 'url':
+            links += [ link ]
+
+        if ent['type'] == 'text_link':
+            links += [ ent['url'] ]
+
+    # Filter for links which have substitutes.
+    # mk_newlinks() returns either [str...] or [False]
+    oldlinks = list(filter(
+        lambda old: mk_newlinks(old)[0],
+        links
+    ))
+
+    # Generate corresponding newlinks,
+    # by picking the first suggestion from mk_newlinks()
+    newlinks = list(map(
+        lambda old: mk_newlinks(old)[0],
+        oldlinks
+    ))
+
+    # Send substitutes as separate messages
+    for oldlink, newlink in zip(oldlinks, newlinks):
+        logging.info(mk_status(upd, 'out', '::', f"{newlink}"))
+
+        msg = TEMPLATE.format(new=newlink, old=oldlink)
+        upd.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+
+
+@logger
+def cb_inline_query(upd, ctx):
+    """
+    Handles inline queries. Sends back prompt menu of new links.
+    """
+    query = upd.inline_query.query
+    newlinks = mk_newlinks(query)
+
+    # If the query string is not a URL,
+    # return a menu of a random sample of alts.
+    if query == '' or not newlinks[0]:
+        nr_results = MAX_RESULTS if MAX_RESULTS <= len(ALTS) else len(ALTS)
+
+        results = [
+            InlineQueryResultArticle(
+                id    = altsite,
+                title = altsite,
+                url   = altsite,
+                description = alt['description'],
+                thumb_url   = alt['thumb_url'],
+                input_message_content = InputTextMessageContent(altsite)
+            ) \
+                for altsite, alt in random.sample(
+                    sorted(ALTS.items()), nr_results
+                )
+        ]
+    # Otherwise, return a menu of a random sample of newlinks
+    # and their alt metadata to populate the inline results menu.
+    else:
+        alts = {
+            newlink: ALTS[urlparse(newlink).netloc]
+            for newlink in newlinks
+        }
+
+        nr_results = MAX_RESULTS if MAX_RESULTS <= len(alts) else len(alts)
+
+        results = [
+            InlineQueryResultArticle(
+                id    = f"{upd.update_id}+{urlparse(newlink).netloc}",
+                title = urlparse(newlink).netloc,
+                url   = newlink,
+                description = alt['description'],
+                thumb_url   = alt['thumb_url'],
+                input_message_content = InputTextMessageContent(
+                    TEMPLATE.format(new=newlink, old=query),
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+            ) \
+                for newlink, alt in random.sample(
+                    sorted(alts.items()), nr_results
+                )
+        ]
+
+    BOT_USERNAME = ctx.bot.get_me().username
+
+    # Answer inline query
+    upd.inline_query.answer(
+        results,
+        # switch_pm_* adds a button the the inline results menu
+        # to open the bot chat.
+        # See: https://core.telegram.org/bots/api#answerinlinequery
+        switch_pm_text=f"Open @{BOT_USERNAME}",
+        switch_pm_parameter='inline',
+    )
+
+
+@logger
+def cb_chosen_inline_result(upd, ctx):
+    """
+    Callback for chosen inline query results. For logging only.
+    See logger()
+    """
+    pass
+
+
+def cb_error(update, context):
+    try:
+        raise context.error
+    except error.TelegramError as e:
+        print("Error: TelegramError:", e, update)
+    except error.ChatMigrated as e:
+        print("Error: ChatMigrated:", e, update)
+    except error.Conflict as e:
+        print("Error: Confict:", e, update)
+    except error.InvalidToken as e:
+        print("Error: InvalidToken:", e, update)
+    except error.RetryAfter as e:
+        print("Error: RetryAfter:", e, update)
+    except error.Unauthorized as e:
+        print("Error: Unauthorized:", e, update)
+
+    except error.NetworkError as e:
+        print("Error: NetworkError:", e, update)
+    except error.BadRequest as e:
+        print("Error: BadRequest:", e, update)
+    except error.TimedOut as e:
+        print("Error: TimedOut:", e, update)
+
+
+
+# Main
+
+def main():
+    TOKEN, ADMIN, LOGFILE = init(args())
+
+    # Init bot
+    try:
+        updater = Updater(TOKEN, use_context=True)
+    except error.InvalidToken as e:
+        stderr(f"Error: Invalid token '{TOKEN}'")
+        exit(1)
+
+    # Test token
+    try:
+        bot_user = updater.bot.get_me()
+    except Unauthorized as e:
+        stderr("Error: Faulty token:", e)
+        exit(1)
+
+    BOT_USERNAME = bot_user.username
+    BOT_ID       = bot_user.id
+
+
+    dp = updater.dispatcher
+    dp.add_error_handler(cb_error)
+
+    dp.add_handler(CommandHandler('start', cb_start))
+    dp.add_handler(CommandHandler('help', cb_help))
+    dp.add_handler(CommandHandler('about', cb_about))
+
+    dp.add_handler(InlineQueryHandler(cb_inline_query))
+    dp.add_handler(ChosenInlineResultHandler(cb_chosen_inline_result))
+
+    dp.add_handler(MessageHandler(
+        ~Filters.via_bot(username=BOT_USERNAME) & (
+            Filters.entity(MessageEntity.URL) |
+            Filters.entity(MessageEntity.TEXT_LINK) |
+            Filters.caption_entity(MessageEntity.URL) |
+            Filters.caption_entity(MessageEntity.TEXT_LINK)
+        ),
+        cb_link_handler
+    ))
+
+    if ADMIN:
+        # Admin callbacks
+        # See: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Code-snippets/1c6ab0d3324a83de2a0a41910491211be2ffb46b#simple-way-of-restarting-the-bot
+        def stop_and_restart():
+            """
+            Gracefully stop the updater
+            and replace the current process with a new one.
+            Called by cb_restart().
+            """
+            # `updater` in scope of function definition
+            updater.stop()
+            return os.execl(sys.executable, sys.executable, *sys.argv)
+
+        @logger
+        def cb_restart(upd, ctx):
+            """
+            /restart callback. Restarts the bot.
+            See handler for authorisation.
+            """
+            status = mk_status(upd, 'cmd', '::', "Authorised - restarting bot...")
+            logging.info(status)
+            print(status)
+            upd.message.reply_text(status)
+
+            return threading.Thread(target=stop_and_restart).start()
+
+        @logger
+        def cb_shutdown(upd, ctx):
+            """
+            /shutdown callback. Shuts down the bot.
+            See handler for authorisation.
+            """
+            status = mk_status(upd, 'cmd', '::', "Authorised - shutdown SIGINT")
+            logging.info(status)
+            print(status)
+            upd.message.reply_text(status)
+
+            os.kill(os.getpid(), signal.SIGINT)
+
+        # Admin handlers
+        dp.add_handler(CommandHandler(
+            'restart', cb_restart,
+            filters=Filters.user(username=ADMIN)
+        ))
+        dp.add_handler(CommandHandler(
+            'shutdown', cb_shutdown,
+            filters=Filters.user(username=ADMIN)
+        ))
+
+    # Start serving
+    stderr(f"linkchanbot {VERSION}")
+    stderr(f"logfile: {LOGFILE}")
+    stderr(f"bot: {BOT_ID} <@{BOT_USERNAME}>")
+    stderr("Bot serving...")
+
+    updater.start_polling()
+    updater.idle()
+
+    stderr("Bot stopped.")
+    return
+
+
+if __name__=='__main__':
+    main()

@@ -1,0 +1,21 @@
+{
+	"twitter.com": [
+		"www.twitter.com",
+		"mobile.twitter.com",
+		"m.twitter.com"
+	],
+	"instagram.com": [
+		"www.instagram.com",
+		"m.instagram.com"
+	],
+	"youtube.com": [
+		"www.youtube.com",
+		"m.youtube.com",
+		"youtu.be"
+	],
+	"reddit.com": [
+		"www.reddit.com",
+		"m.reddit.com",
+		"redd.it"
+	]
+}
