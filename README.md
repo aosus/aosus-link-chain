@@ -4,6 +4,10 @@ linkchanbot
 A Telegram Bot which sanitises and substitutes share links
 with lightweight, privacy respecting proxy frontend alternatives.
 
+Main instance: [@linkchanbot](https://t.me/linkchanbot)
+
+![screenshot](https://i.imgur.com/zhXeqa7.jpg)
+
 Supported services (configurable):
 
 - twitter.com -> Nitter
