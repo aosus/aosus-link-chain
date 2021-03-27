@@ -471,6 +471,10 @@ def cb_link_handler(upd, ctx):
     Handles messages with links (see main > MessageHandler).
     Replies with `TEMPLATE` with new links.
     """
+    if not upd.message:
+        # Will have been logged as [ukn] in @logger
+        return
+
     links = []
 
     # Telegram returns message metadata called 'entities'
