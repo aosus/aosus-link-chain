@@ -48,8 +48,9 @@ Configuration
 -   Create a new bot (or select an existing one).
 -   Save the bot API token.
 -   Enable "Inline mode".
--   Optionally set the "inline placeholder" to "Paste link..."
+-   Set the "inline placeholder" to "Paste link...".
 -   Optionally set "inline feedback" to "100%" for logging.
+-   Set the bot commands: `/start`, `/help`, and `/about`.
 
 ### Server
 
