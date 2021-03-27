@@ -336,7 +336,7 @@ I support Twitter, YouTube, Instagram and Reddit.
 *Try group chats*
     [Add me](t.me/{BOT_USERNAME}?startgroup=1) and share links.
 
-See /help or /about
+See /help, /about or @linkchan\_updates.
 """
 
     # Inline keyboard with "Try inline" button.
@@ -396,7 +396,8 @@ This bot only logs messages with links and inline queries.
 This bot receives no chat data when used in inline mode, only the user data of the user who is using inline mode.  Use inline mode for maximum privacy.
 
 *CONTRIBUTING*
-Have a suggestion or bug report?  See /about.
+Have a suggestion or bug report?
+See /about or @linkchan\_updates.
 """
 
     # Send message
@@ -416,7 +417,7 @@ def cb_about(upd, ctx):
 
     # Outgoing text
     msg = f"""
-@{BOT_USERNAME} (@linkchanbot)
+@{BOT_USERNAME} (@linkchan\_updates)
 
 Version
     {VERSION}
