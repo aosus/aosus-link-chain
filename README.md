@@ -47,6 +47,7 @@ Configuration
 -   Visit [@botfather](https://t.me/botfather).
 -   Create a new bot (or select an existing one).
 -   Save the bot API token.
+-   Disable "Group Privacy mode".
 -   Enable "Inline mode".
 -   Set the "inline placeholder" to "Paste link...".
 -   Optionally set "inline feedback" to "100%" for logging.

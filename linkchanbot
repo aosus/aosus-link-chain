@@ -334,7 +334,7 @@ I support Twitter, YouTube, Instagram and Reddit.
     [Send me](t.me/{BOT_USERNAME}) a link.
 
 *Try group chats*
-    [Add me](t.me/{BOT_USERNAME}?startgroup=1) and promote me to admin, then share links.
+    [Add me](t.me/{BOT_USERNAME}?startgroup=1) and share links.
 
 See /help or /about
 """
@@ -377,7 +377,7 @@ Inline
 Bot PMs
     Send any text with links.
 Group chats
-    Add me and promote me to admin.
+    Add me and share any text with links.
 
 *SUPPORTED SERVICES*
 - twitter.com => Nitter (nitter.net)
@@ -391,9 +391,12 @@ For in-chat replies, default proxies are used.  For inline queries, a menu of pr
 All URL query parameters for all domains are removed, except for whitelisted queries per service.
 
 *PRIVACY*
-This bot needs admin privileges to access group chat messages.  The official instance (@linkchanbot) only logs messages with links, but be wary of other instances with modified source code.
+This bot only logs messages with links and inline queries.
 
-This bot receives no chat data when used in inline mode, only the user data of the user who is using inline mode.  Use inline mode for ultimate privacy.
+This bot receives no chat data when used in inline mode, only the user data of the user who is using inline mode.  Use inline mode for maximum privacy.
+
+*CONTRIBUTING*
+Have a suggestion or bug report?  See /about.
 """
 
     # Send message
