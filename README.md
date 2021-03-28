@@ -4,9 +4,10 @@ linkchanbot
 A Telegram Bot which sanitises and substitutes share links
 with lightweight, privacy respecting proxy frontend alternatives.
 
-Main instance: [@linkchanbot](https://t.me/linkchanbot)
+- Main instance: [@linkchanbot](https://t.me/linkchanbot)
+- User updates: [@linkchan\_updates](https://t.me/linkchan_updates)
 
-![screenshot](https://i.imgur.com/zhXeqa7.jpg)
+![screenshot](https://i.imgur.com/WnbOD5c.jpg)
 
 Supported services (configurable):
 
@@ -21,13 +22,13 @@ Installation
 
 ### Prerequisites
 
--   A Telegram bot token (visit [@botfather](https://t.me/botfather)).
+- A Telegram bot token (visit [@botfather](https://t.me/botfather)).
 
 ### Dependencies
 
--   [scdoc](https://sr.ht/~sircmpwn/scdoc) (build dep.)
--   Python >= 3.9
--   PyPI: python-telegram-bot >= 13
+- [scdoc](https://sr.ht/~sircmpwn/scdoc) (build dep.)
+- Python >= 3.9
+- PyPI: python-telegram-bot >= 13
 
 ### Install
 
@@ -44,14 +45,14 @@ Configuration
 
 ### Telegram
 
--   Visit [@botfather](https://t.me/botfather).
--   Create a new bot (or select an existing one).
--   Save the bot API token.
--   Disable "Group Privacy mode".
--   Enable "Inline mode".
--   Set the "inline placeholder" to "Paste link...".
--   Optionally set "inline feedback" to "100%" for logging.
--   Set the bot commands: `/start`, `/help`, and `/about`.
+- Visit [@botfather](https://t.me/botfather).
+- Create a new bot (or select an existing one).
+- Save the bot API token.
+- Disable "Group Privacy mode".
+- Enable "Inline mode".
+- Set the "inline placeholder" to "Paste link...".
+- Optionally set "inline feedback" to "100%" for logging.
+- Set the bot commands: `/start`, `/help`, and `/about`.
 
 ### Server
 
