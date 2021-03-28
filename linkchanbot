@@ -319,7 +319,7 @@ def cb_start(upd, ctx):
         examples(upd, ctx)
         return
 
-    BOT_USERNAME = ctx.bot.get_me().username
+    BOT_USERNAME = ctx.bot.get_me().username.replace('_', '\\_')
 
     # outgoing text
     msg = f"""
@@ -364,7 +364,7 @@ def cb_help(upd, ctx):
     """
     /help callback
     """
-    BOT_USERNAME = ctx.bot.get_me().username
+    BOT_USERNAME = ctx.bot.get_me().username.replace('_', '\\_')
 
     # Outgoing text
     msg = f"""
@@ -413,7 +413,7 @@ def cb_about(upd, ctx):
     """
     /about callback
     """
-    BOT_USERNAME = ctx.bot.get_me().username
+    BOT_USERNAME = ctx.bot.get_me().username.replace('_', '\\_')
 
     # Outgoing text
     msg = f"""
@@ -512,6 +512,7 @@ def cb_link_handler(upd, ctx):
     for oldlink, newlink in zip(oldlinks, newlinks):
         logging.info(mk_status(upd, 'out', '::', f"{newlink}"))
 
+        newlink = newlink.replace('_', '\\_')
         msg = TEMPLATE.format(new=newlink, old=oldlink)
         upd.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
@@ -560,7 +561,9 @@ def cb_inline_query(upd, ctx):
                 description = alt['description'],
                 thumb_url   = alt['thumb_url'],
                 input_message_content = InputTextMessageContent(
-                    TEMPLATE.format(new=newlink, old=query),
+                    TEMPLATE.format(
+                        new=newlink.replace('_', '\\_'), old=query
+                    ),
                     parse_mode=ParseMode.MARKDOWN,
                 )
             ) \
