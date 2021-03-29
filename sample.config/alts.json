@@ -280,47 +280,47 @@
 
 	"libredd.it": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libredd.it/favicon.ico",
+		"thumb_url": "https://libredd.it/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"libreddit.spike.codes": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libreddit.spike.codes/favicon.ico",
+		"thumb_url": "https://libreddit.spike.codes/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"libreddit.dothq.co": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libreddit.dothq.co/favicon.ico",
+		"thumb_url": "https://libreddit.dothq.co/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"libreddit.kavin.rocks": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libreddit.kavin.rocks/favicon.ico",
+		"thumb_url": "https://libreddit.kavin.rocks/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"libreddit.himiko.cloud": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libreddit.himiko.cloud/favicon.ico",
+		"thumb_url": "https://libreddit.himiko.cloud/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"libreddit.bcow.xyz": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libreddit.bcow.xyz/favicon.ico",
+		"thumb_url": "https://libreddit.bcow.xyz/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"libreddit.40two.app": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://libreddit.40two.app/favicon.ico",
+		"thumb_url": "https://libreddit.40two.app/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"reddit.invak.id": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://reddit.invak.id/favicon.ico",
+		"thumb_url": "https://reddit.invak.id/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 	"reddit.phii.me": {
 		"description": "Libreddit (Reddit proxy)",
-		"thumb_url": "https://reddit.phii.me/favicon.ico",
+		"thumb_url": "https://reddit.phii.me/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 
