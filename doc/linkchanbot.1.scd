@@ -42,13 +42,16 @@ _bot.cfg_
 	_token_
 		Required. The Telegram bot token. Visit @botfather.
 	_admin_
-		Optional. A Telegram username to whom the bot will provide the special
+		Optional. A Telegram username
+		to whom the bot will provide the special
 		_/restart_ and _/shutdown_ commands.
 
 _alts.json_
-	Defines the alternative services (proxies or otherwise) available as
-	a substitute.  An alt's _service_ value should exist as a key in
-	_services.json_, else it won't be recognised as available.
+	Defines the alternative services (proxies or otherwise)
+	available as a substitute.
+	An alt's _service_ value should exist
+	and have a corresponding a key in _services.json_
+	else it won't be recognised as available.
 
 _services.json_
 	Defines the domains and subdomains of common services to be
