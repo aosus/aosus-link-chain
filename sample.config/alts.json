@@ -1,275 +1,330 @@
 {
 	"tweet.lambda.dance": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://tweet.lambda.dance/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.himiko.cloud": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.himiko.cloud/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.net": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.net/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.cc": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.cc/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.42l.fr": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.42l.fr/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.pussthecat.org": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.pussthecat.org/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.nixnet.services": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.nixnet.services/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.mastodont.cat": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.mastodont.cat/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.tedomum.net": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.tedomum.net/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.fdn.fr": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.fdn.fr/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.1d4.us": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.1d4.us/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.kavin.rocks": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.kavin.rocks/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.vxempire.xyz": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.vxempire.xyz/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.unixfox.eu": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.unixfox.eu/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.domain.glass": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.domain.glass/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.eu": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.eu/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.ethibox.fr": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.ethibox.fr/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.namazso.eu": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.namazso.eu/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.mailstation.de": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.mailstation.de/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.actionsack.com": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.actionsack.com/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.cattube.org": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.cattube.org/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.dark.fail": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.dark.fail/logo.png",
 		"service": "twitter.com"
 	},
 	"birdsite.xanny.family": {
-		"description": "Twitter proxy",
+		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://birdsite.xanny.family/logo.png",
 		"service": "twitter.com"
 	},
 
 
 	"invidious.himiko.cloud": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.himiko.cloud/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.snopyta.org": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.snopyta.org/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"vid.puffyan.us": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://vid.puffyan.us/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.kavin.rocks": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.kavin.rocks/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"inv.skyn3t.in": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://inv.skyn3t.in/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.tube": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.tube/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"tube.incog.host": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://tube.incog.host/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.namazso.eu": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.namazso.eu/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"ytprivate.com": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://ytprivate.com/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.zapashcanon.fr": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.zapashcanon.fr/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.fdn.fr": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.fdn.fr/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"yewtu.be": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://yewtu.be/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.xyz": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.xyz/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.048596.xyz": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.048596.xyz/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.site": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.site/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidiou.site": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidiou.site/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.zee.li": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.zee.li/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"tube.connect.cafe": {
-		"description": "YouTube proxy",
+		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://tube.connect.cafe/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 
 
+	"tube.cadence.moe": {
+		"description": "CloudTube (YouTube proxy)",
+		"service": "youtube.com"
+	},
+
+
 	"bibliogram.art": {
-		"description": "Instagram proxy",
+		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.art/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 	"bibliogram.snopyta.org": {
-		"description": "Instagram proxy",
+		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.snopyta.org/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 	"bibliogram.pussthecat.org": {
-		"description": "Instagram proxy",
+		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.pussthecat.org/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 	"bibliogram.nixnet.services": {
-		"description": "Instagram proxy",
+		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.nixnet.services/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 	"bibliogram.ethibox.fr": {
-		"description": "Instagram proxy",
+		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.ethibox.fr/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 	"bibliogram.hamster.dance": {
-		"description": "Instagram proxy",
+		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.hamster.dance/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 
 
 	"teddit.net": {
-		"description": "Reddit proxy",
+		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.net/favicon.png",
 		"service": "reddit.com"
 	},
 	"teddit.ggc-project.de": {
-		"description": "Reddit proxy",
+		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.ggc-project.de/favicon.png",
 		"service": "reddit.com"
 	},
 	"teddit.kavin.rocks": {
-		"description": "Reddit proxy",
+		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.kavin.rocks/favicon.png",
 		"service": "reddit.com"
 	},
 	"teddit.zaggy.nl": {
-		"description": "Reddit proxy",
+		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.zaggy.nl/favicon.png",
 		"service": "reddit.com"
 	},
 	"teddit.namazso.eu": {
-		"description": "Reddit proxy",
+		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.namazso.eu/favicon.png",
 		"service": "reddit.com"
 	},
 	"teddit.nautolan.racing": {
-		"description": "Reddit proxy",
+		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.nautolan.racing/favicon.png",
 		"service": "reddit.com"
 	},
+
+
+	"libredd.it": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libredd.it/favicon.ico",
+		"service": "reddit.com"
+	},
+	"libreddit.spike.codes": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.spike.codes/favicon.ico",
+		"service": "reddit.com"
+	},
+	"libreddit.dothq.co": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.dothq.co/favicon.ico",
+		"service": "reddit.com"
+	},
+	"libreddit.kavin.rocks": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.kavin.rocks/favicon.ico",
+		"service": "reddit.com"
+	},
+	"libreddit.himiko.cloud": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.himiko.cloud/favicon.ico",
+		"service": "reddit.com"
+	},
+	"libreddit.bcow.xyz": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.bcow.xyz/favicon.ico",
+		"service": "reddit.com"
+	},
+	"libreddit.40two.app": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.40two.app/favicon.ico",
+		"service": "reddit.com"
+	},
+	"reddit.invak.id": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://reddit.invak.id/favicon.ico",
+		"service": "reddit.com"
+	},
+	"reddit.phii.me": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://reddit.phii.me/favicon.ico",
+		"service": "reddit.com"
+	},
+
+
 	"old.reddit.com": {
 		"description": "Old Reddit (old.)",
 		"thumb_url": "https://old.reddit.com/apple-touch-icon.png",

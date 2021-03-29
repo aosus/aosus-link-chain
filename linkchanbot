@@ -534,8 +534,8 @@ def cb_inline_query(upd, ctx):
                 id    = altsite,
                 title = altsite,
                 url   = altsite,
-                description = alt['description'],
-                thumb_url   = alt['thumb_url'],
+                description = alt.get('description', 'Alt service'),
+                thumb_url   = alt.get('thumb_url'),
                 input_message_content = InputTextMessageContent(altsite)
             ) \
                 for altsite, alt in random.sample(
@@ -557,8 +557,8 @@ def cb_inline_query(upd, ctx):
                 id    = f"{upd.update_id}+{urlparse(newlink).netloc}",
                 title = urlparse(newlink).netloc,
                 url   = newlink,
-                description = alt['description'],
-                thumb_url   = alt['thumb_url'],
+                description = alt.get('description', 'Alt service'),
+                thumb_url   = alt.get('thumb_url'),
                 input_message_content = InputTextMessageContent(
                     TEMPLATE.format(new=newlink, old=query),
                     parse_mode=ParseMode.HTML,
