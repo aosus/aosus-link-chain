@@ -7,7 +7,7 @@ VERSION=0.0.0
 
 PREFIX?=/usr/local
 BINDIR?=$(PREFIX)/bin
-SHAREDIR?=$(PREFIX)/share/linkchanbot
+SHAREDIR?=$(PREFIX)/share/linkchan
 MANDIR?=$(PREFIX)/share/man
 
 VPATH=doc

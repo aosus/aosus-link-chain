@@ -106,7 +106,8 @@ def init(args):
     config_home = pathlib.Path(os.getenv('XDG_CONFIG_HOME', os.getenv('HOME') + '/.config'))
     config_dir = config_home/'linkchan'
     config_dir.mkdir(parents=True, exist_ok=True)  # EFFECT
-    sys_config_dir = pathlib.Path('/usr/local/share/linkchanbot')
+
+    sys_share_dir = pathlib.Path('/usr/local/share/linkchan')
 
     config_files = ('bot.cfg', 'alts.json', 'services.json', 'queries.json')
 
@@ -114,7 +115,7 @@ def init(args):
     # Fail if files not found.
     for file in config_files:
         locfile = config_dir/file
-        sysfile = sys_config_dir/file
+        sysfile = sys_share_dir/file
 
         if locfile.is_file():
             continue
@@ -124,7 +125,7 @@ def init(args):
             else:
                 stderr(
                     f"Error: config file '{file}' not found in"
-                    "'{config_dir}' or '{sys_config_dir}'",
+                    f"'{config_dir}' or '{sys_share_dir}'",
                 )
                 exit(1)
 
