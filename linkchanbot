@@ -194,7 +194,7 @@ def stderr(*args, **kwargs):
     """
     Prints to stderr.
     """
-    print(file=sys.stderr, *args, **kwargs)
+    print(*args, **kwargs, file=sys.stderr)
 
 def logger(old_cb_func):
     """
@@ -223,23 +223,23 @@ def logger(old_cb_func):
     return new_cb_func
 
 
-def mk_status(upd, utype, dl='<<', text=None):
+def mk_status(upd, utype, dl='::', text=None):
     """
     Prepares a standardised string for logging.
     Called by wrapped callbacks (see logger())
     or by callbacks for terminal output.
     """
-    uid    = upd.update_id
-    user_id = upd.effective_user.id
+    uid       = upd.update_id
+    user_id   = upd.effective_user.id
     user_name = upd.effective_user.name
 
     chat = upd.effective_chat
     if chat:
-        chat_id = chat.id
+        chat_id   = chat.id
         chat_name = chat.link or chat.title or chat.full_name
         chat_name = chat_name.replace('https://t.me/', '@')
     else:
-        chat_id = '#'
+        chat_id   = '#'
         chat_name = '#'
 
     if not text:
@@ -327,24 +327,24 @@ def cb_start(upd, ctx):
         examples(upd, ctx)
         return
 
-    BOT_USERNAME = ctx.bot.get_me().username.replace('_', '\\_')
+    bot_username = ctx.bot.get_me().username.replace('_', '\\_')
 
     # outgoing text
     msg = f"""
-@{BOT_USERNAME} cleans & proxies your share links.
-I support Twitter, YouTube, Instagram and Reddit.
+@{bot_username} cleans & proxies your share links.
+I support _Twitter_, _YouTube_, _Instagram_ and _Reddit_.
 
 *Try inline*
-    Type:  `@{BOT_USERNAME} <link>`
-    [See examples](t.me/{BOT_USERNAME}?start=examples).
+    Type:  `@{bot_username} <link>`
+    [See examples](t.me/{bot_username}?start=examples)
 
 *Try bot PMs*
-    [Send me](t.me/{BOT_USERNAME}) a link.
+    [Send me](t.me/{bot_username}) a link
 
 *Try group chats*
-    [Add me](t.me/{BOT_USERNAME}?startgroup=1) and share links.
+    [Add me](t.me/{bot_username}?startgroup=1) and share links
 
-See /help, /about or @linkchan\_updates.
+See /help, /about or @linkchan\_updates
 """
 
     # Inline keyboard with "Try inline" button.
@@ -372,20 +372,15 @@ def cb_help(upd, ctx):
     """
     /help callback
     """
-    BOT_USERNAME = ctx.bot.get_me().username.replace('_', '\\_')
+    bot_username = ctx.bot.get_me().username.replace('_', '\\_')
 
     # Outgoing text
     msg = f"""
 *DESCRIPTION*
-@{BOT_USERNAME} substitutes the share links of popular services for lightweight and privacy respecting alternatives, and sanitises unnecesary queries and trackers.
+@{bot_username} substitutes the share links of popular services for lightweight and privacy respecting alternatives, and sanitises unnecesary queries and trackers.
 
 *USAGE*
-Inline
-    Type:  `@{BOT_USERNAME} <link>`
-Bot PMs
-    Send any text with links.
-Group chats
-    Add me and share any text with links.
+See /start
 
 *SUPPORTED SERVICES*
 - twitter.com => Nitter
@@ -421,11 +416,11 @@ def cb_about(upd, ctx):
     """
     /about callback
     """
-    BOT_USERNAME = ctx.bot.get_me().username.replace('_', '\\_')
+    bot_username = ctx.bot.get_me().username.replace('_', '\\_')
 
     # Outgoing text
     msg = f"""
-@{BOT_USERNAME} (@linkchan\_updates)
+@{bot_username} (@linkchan\_updates)
 
 Version
     {VERSION}
@@ -487,7 +482,7 @@ def cb_link_handler(upd, ctx):
     links = []
 
     # Telegram returns message metadata called 'entities'
-    # (commands, formatted text, links, etc.).
+    # (commands, hashtags, mentions, formatted text, links, etc.).
     # We extract the link entities.
     entities = {}
     entities.update(upd.message.parse_entities())
@@ -495,10 +490,8 @@ def cb_link_handler(upd, ctx):
 
     for ent, link in entities.items():
         link = oneline(link)
-
         if ent['type'] == 'url':
             links += [ link ]
-
         if ent['type'] == 'text_link':
             links += [ ent['url'] ]
 
@@ -535,7 +528,7 @@ def cb_inline_query(upd, ctx):
     # If the query string is not a URL,
     # return a menu of a random sample of alts.
     if query == '' or not newlinks[0]:
-        nr_results = MAX_RESULTS if MAX_RESULTS <= len(ALTS) else len(ALTS)
+        nr_results = len(ALTS) if len(ALTS) <= MAX_RESULTS else MAX_RESULTS
 
         results = [
             InlineQueryResultArticle(
@@ -558,7 +551,7 @@ def cb_inline_query(upd, ctx):
             for newlink in newlinks
         }
 
-        nr_results = MAX_RESULTS if MAX_RESULTS <= len(alts) else len(alts)
+        nr_results = len(alts) if len(alts) <= MAX_RESULTS else MAX_RESULTS
 
         results = [
             InlineQueryResultArticle(
@@ -577,7 +570,7 @@ def cb_inline_query(upd, ctx):
                 )
         ]
 
-    BOT_USERNAME = ctx.bot.get_me().username
+    bot_username = ctx.bot.get_me().username
 
     # Answer inline query
     upd.inline_query.answer(
@@ -585,7 +578,7 @@ def cb_inline_query(upd, ctx):
         # switch_pm_* adds a button the the inline results menu
         # to open the bot chat.
         # See: https://core.telegram.org/bots/api#answerinlinequery
-        switch_pm_text=f"Open @{BOT_USERNAME}",
+        switch_pm_text=f"Open @{bot_username}",
         switch_pm_parameter='inline',
     )
 
