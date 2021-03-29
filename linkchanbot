@@ -177,6 +177,13 @@ def init(args):
         )
         exit(1)
 
+    # Validate ALTS
+    for altsite, alt in ALTS.items():
+        if 'service' not in alt:
+            logging.warning(
+                f"alts.json: '{altsite}' has no 'service' value, ignored"
+            )
+
     return TOKEN, ADMIN, LOGFILE
 
 
@@ -285,7 +292,7 @@ def mk_newlinks(link):
     # Find alts for replacing `service`
     applicable_alts = {
         altsite: alt for (altsite, alt) in ALTS.items()
-        if alt['service'] == service
+        if alt.get('service') == service
     }
 
     # Make new substitutes
