@@ -11,10 +11,10 @@ with lightweight, privacy respecting proxy frontend alternatives.
 
 Supported services (configurable):
 
-- twitter.com -> Nitter
-- youtube.com -> Inividious
-- instagram.com -> Bibliogram
-- reddit.com -> Teddit, Old Reddit
+- twitter.com => Nitter
+- youtube.com => Inividious, CloudTube
+- instagram.com => Bibliogram
+- reddit.com => Teddit, Libreddit, Old Reddit
 
 
 Installation

@@ -381,10 +381,10 @@ Group chats
     Add me and share any text with links.
 
 *SUPPORTED SERVICES*
-- twitter.com => Nitter (nitter.net)
-- youtube.com => Inividious (invidio.us)
-- instagram.com => Bibliogram (bibliogram.art)
-- reddit.com => Teddit, Old Reddit (teddit.net, old.reddit.com)
+- twitter.com => Nitter
+- youtube.com => Inividious, CloudTube
+- instagram.com => Bibliogram
+- reddit.com => Teddit, Libreddit, Old Reddit
 
 *NOTES*
 For in-chat replies, default proxies are used.  For inline queries, a menu of proxies are available.  To cycle through proxy menus, append '#' to your link.
