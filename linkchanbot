@@ -18,11 +18,11 @@ from telegram.constants import MAX_INLINE_QUERY_RESULTS as MAX_RESULTS
 from telegram import error
 
 from urllib.parse import urlparse, urlencode, parse_qs
+import logging.handlers
 import argparse
 import configparser
 import functools
 import json
-import logging
 import os
 import pathlib
 import random
@@ -133,15 +133,16 @@ def init(args):
     LOGFILE = args.logfile or os.getenv('LINKCHAN_LOGFILE') or cache_dir/'log'
 
     try:
-        logging.basicConfig(
-            filename = LOGFILE,
-            filemode = 'a',
-            format   = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level    = logging.INFO,
-        )
+        handler = logging.handlers.WatchedFileHandler(LOGFILE)
     except FileNotFoundError as e:
         stderr("Error: logfile:", e)
         exit(1)
+
+    logging.basicConfig(
+        format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level = logging.INFO,
+        handlers = (handler,)
+    )
 
     # Config
     TOKEN = os.getenv('LINKCHAN_TOKEN')
@@ -177,7 +178,7 @@ def init(args):
     # Validate ALTS
     for altsite, alt in ALTS.items():
         if 'service' not in alt:
-            logging.warning(
+            logging.warn(
                 f"alts.json: '{altsite}' has no 'service' value, ignored"
             )
 
@@ -193,7 +194,7 @@ def stderr(*args, **kwargs):
     """
     print(*args, **kwargs, file=sys.stderr)
 
-def logger(old_cb_func):
+def logged(old_cb_func):
     """
     Wraps callback functions, logs incomming telegram updates.
     """
@@ -223,7 +224,7 @@ def logger(old_cb_func):
 def mk_status(upd, utype, dl='::', text=None):
     """
     Prepares a standardised string for logging.
-    Called by wrapped callbacks (see logger())
+    Called by wrapped callbacks (see @logged)
     or by callbacks for terminal output.
     """
     uid       = upd.update_id
@@ -312,7 +313,7 @@ def oneline(s: str) -> str:
 
 # Callback Handlers
 
-@logger
+@logged
 def cb_start(upd, ctx):
     """
     /start callback
@@ -408,7 +409,7 @@ See /about or @linkchan\_updates.
     )
 
 
-@logger
+@logged
 def cb_about(upd, ctx):
     """
     /about callback
@@ -466,14 +467,14 @@ def examples(upd, ctx):
 
 
 
-@logger
+@logged
 def cb_link_handler(upd, ctx):
     """
     Handles messages with links (see main > MessageHandler).
     Replies with `TEMPLATE` with new links.
     """
     if not upd.message:
-        # Will have been logged as [ukn] in @logger
+        # Will have been logged as [ukn] in @logged
         return
 
     links = []
@@ -514,7 +515,7 @@ def cb_link_handler(upd, ctx):
         upd.message.reply_text(msg, parse_mode=ParseMode.HTML)
 
 
-@logger
+@logged
 def cb_inline_query(upd, ctx):
     """
     Handles inline queries. Sends back prompt menu of new links.
@@ -580,11 +581,11 @@ def cb_inline_query(upd, ctx):
     )
 
 
-@logger
+@logged
 def cb_chosen_inline_result(upd, ctx):
     """
     Callback for chosen inline query results. For logging only.
-    See logger()
+    See @logged
     """
     pass
 
@@ -675,7 +676,7 @@ def main():
             updater.stop()
             return os.execl(sys.executable, sys.executable, *sys.argv)
 
-        @logger
+        @logged
         def cb_restart(upd, ctx):
             """
             /restart callback. Restarts the bot.
@@ -688,7 +689,7 @@ def main():
 
             return threading.Thread(target=stop_and_restart).start()
 
-        @logger
+        @logged
         def cb_shutdown(upd, ctx):
             """
             /shutdown callback. Shuts down the bot.
