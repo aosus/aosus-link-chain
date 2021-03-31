@@ -109,7 +109,7 @@ def init(args):
 
     sys_share_dir = pathlib.Path('/usr/local/share/linkchan')
 
-    config_files = ('bot.cfg', 'alts.json', 'services.json', 'queries.json')
+    config_files = ('bot.cfg', 'alts.json', 'services.json')
 
     # Copy system global config files to local XDG config dir.
     # Fail if files not found.
@@ -159,15 +159,12 @@ def init(args):
 
     global ALTS
     global SERVICES
-    global QUERIES
 
     try:
         with open(config_dir/'alts.json', 'r') as file:
             ALTS = json.load(file)
         with open(config_dir/'services.json', 'r') as file:
             SERVICES = json.load(file)
-        with open(config_dir/'queries.json', 'r') as file:
-            QUERIES = json.load(file)
     except FileNotFoundError as e:
         stderr("Error: Missing config file:", e)
         exit(1)
@@ -270,16 +267,16 @@ def mk_newlinks(link):
     if url.netloc in SERVICES.keys():
         service = url.netloc
     else:
-        for main, others in SERVICES.items():
-            if url.netloc in others:
-                service = main
+        for main_domain, service_data in SERVICES.items():
+            if url.netloc in service_data['alt_domains']:
+                service = main_domain
                 break
         else:
             # Fail if service is unrecognised
             return [False]
 
     # Keep only allowed URL queries
-    allowed_queries = QUERIES.get(service) or []
+    allowed_queries = SERVICES[service].get('query_whitelist') or []
     old_queries = parse_qs(url.query, keep_blank_values=True)
     new_queries = {
         query:v for (query,v) in old_queries.items()

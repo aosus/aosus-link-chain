@@ -1,21 +1,38 @@
 {
-	"twitter.com": [
-		"www.twitter.com",
-		"mobile.twitter.com",
-		"m.twitter.com"
-	],
-	"instagram.com": [
-		"www.instagram.com",
-		"m.instagram.com"
-	],
-	"youtube.com": [
-		"www.youtube.com",
-		"m.youtube.com",
-		"youtu.be"
-	],
-	"reddit.com": [
-		"www.reddit.com",
-		"m.reddit.com",
-		"redd.it"
-	]
+	"twitter.com": {
+		"alt_domains": [
+			"www.twitter.com",
+			"mobile.twitter.com",
+			"m.twitter.com"
+		],
+		"query_whitelist": []
+	},
+	"instagram.com": {
+		"alt_domains": [
+			"www.instagram.com",
+			"m.instagram.com"
+		],
+		"query_whitelist": []
+	},
+	"youtube.com": {
+		"alt_domains": [
+			"www.youtube.com",
+			"m.youtube.com",
+			"youtu.be"
+		],
+		"query_whitelist": [
+			"v",
+			"list"
+		]
+	},
+	"reddit.com": {
+		"alt_domains": [
+			"www.reddit.com",
+			"m.reddit.com",
+			"redd.it"
+		],
+		"query_whitelist": [
+			"context"
+		]
+	}
 }
