@@ -651,7 +651,12 @@ def main():
     dp.add_handler(ChosenInlineResultHandler(cb_chosen_inline_result))
 
     dp.add_handler(MessageHandler(
+        # (not) messages from this bot
         ~Filters.via_bot(username=BOT_USERNAME) & (
+            # non-edited messages
+            Filters.update.message | Filters.update.channel_post
+        ) & (
+            # messages with links
             Filters.entity(MessageEntity.URL) |
             Filters.entity(MessageEntity.TEXT_LINK) |
             Filters.caption_entity(MessageEntity.URL) |
