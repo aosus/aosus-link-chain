@@ -32,7 +32,6 @@ install: all
 	install -m644 sample.config/bot.cfg $(DESTDIR)$(SHAREDIR)/bot.cfg
 	install -m644 sample.config/alts.json $(DESTDIR)$(SHAREDIR)/alts.json
 	install -m644 sample.config/services.json $(DESTDIR)$(SHAREDIR)/services.json
-	install -m644 sample.config/queries.json $(DESTDIR)$(SHAREDIR)/queries.json
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/linkchanbot
@@ -40,6 +39,5 @@ uninstall:
 	$(RM) $(DESTDIR)$(SHAREDIR)/bot.cfg
 	$(RM) $(DESTDIR)$(SHAREDIR)/alts.json
 	$(RM) $(DESTDIR)$(SHAREDIR)/services.json
-	$(RM) $(DESTDIR)$(SHAREDIR)/queries.json
 
 .PHONY: all doc clean install uninstall
