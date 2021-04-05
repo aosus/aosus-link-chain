@@ -8,7 +8,7 @@ with lightweight, privacy respecting proxy frontend alternatives.
 
 # SYNOPSIS
 
-*linkchanbot* [-h] [-v] [-l LOGFILE]
+*linkchanbot* [-h] [-v] [-l _LOGFILE_]
 
 # DESCRIPTION
 
@@ -37,39 +37,37 @@ from _$XDG_CONFIG_HOME/linkchan_ (defaults to _$HOME/.config/linkchan_).
 from _/etc/local/share/linkchanbot_.
 
 _bot.cfg_
-	Defines the _token_ and _admin_ variables.
+	Defines the *token* and *admin* variables.
 
-	_token_
+	*token*
 		Required. The Telegram bot token. Visit @botfather.
-	_admin_
+	*admin*
 		Optional. A Telegram username
 		to whom the bot will provide the special
-		_/restart_ and _/shutdown_ commands.
+		*/restart* and */shutdown* commands.
 
 _alts.json_
 	Defines the alternative services (proxies or otherwise)
 	available as a substitute.
-	An alt's _service_ value should exist
-	and have a corresponding a key in _services.json_
-	else it won't be recognised as available.
+	An alt's *service* value should exist
+	and have a corresponding a key in _services.json_,
+	else it will be ignored.
 
 _services.json_
-	Defines the domains and subdomains of common services to be
-	recognised and replaced.
-
-_queries.json_
-	Defines whitelists of queries to be left untouched during substitution.
+	Defines common services to be recognised and replaced.
+	For each domain, defines the alternate domains and whitelists
+	of queries to be left untouched during substitution.
 
 # TELEGRAM USAGE
 
-Send _/start_ on Telegram. *linkchanbot* will present help.
+Send */start* on Telegram. *linkchanbot* will present usage information.
 
-Additionally, if _admin_ is specified in configuration, the Telegram user
-with the username _admin_ will be provided with the following commands:
+Additionally, if *admin* is specified in configuration, the Telegram user
+with the username *admin* will be provided with the following commands:
 
-_/restart_
+*/restart*
 	Restart the bot. Reads new configuration.
 
-_/shutdown_
+*/shutdown*
 	Shutdown the bot.
 
