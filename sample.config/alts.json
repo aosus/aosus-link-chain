@@ -114,6 +114,21 @@
 		"thumb_url": "https://birdsite.xanny.family/logo.png",
 		"service": "twitter.com"
 	},
+	"nitter.40two.app": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.40two.app/logo.png",
+		"service": "twitter.com"
+	},
+	"nitter.skrep.in": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.skrep.in/logo.png",
+		"service": "twitter.com"
+	},
+	"nitter.hu": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.hu/logo.png",
+		"service": "twitter.com"
+	},
 
 
 	"invidious.himiko.cloud": {
@@ -206,6 +221,21 @@
 		"thumb_url": "https://tube.connect.cafe/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
+	"invidious.tinfoil-hat.net": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.tinfoil-hat.net/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidious.reallyancient.tech": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.reallyancient.tech/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidious.silkky.cloud": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.silkky.cloud/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
 
 
 	"tube.cadence.moe": {
@@ -244,6 +274,11 @@
 		"thumb_url": "https://bibliogram.hamster.dance/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
+	"bib.actionsack.com": {
+		"description": "Bibliogram (Instagram proxy)",
+		"thumb_url": "https://bib.actionsack.com/apple-touch-icon.png",
+		"service": "instagram.com"
+	},
 
 
 	"teddit.net": {
@@ -274,6 +309,11 @@
 	"teddit.nautolan.racing": {
 		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.nautolan.racing/favicon.png",
+		"service": "reddit.com"
+	},
+	"teddit.tinfoil-hat.net": {
+		"description": "Teddit (Reddit proxy)",
+		"thumb_url": "https://teddit.tinfoil-hat.net/favicon.png",
 		"service": "reddit.com"
 	},
 
@@ -321,6 +361,11 @@
 	"reddit.phii.me": {
 		"description": "Libreddit (Reddit proxy)",
 		"thumb_url": "https://reddit.phii.me/touch-icon-iphone.png",
+		"service": "reddit.com"
+	},
+	"libreddit.silkky.cloud": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.silkky.cloud/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 
