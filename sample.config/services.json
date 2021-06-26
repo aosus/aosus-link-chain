@@ -21,6 +21,7 @@
 			"youtu.be"
 		],
 		"query_whitelist": [
+			"t",
 			"v",
 			"list"
 		]
