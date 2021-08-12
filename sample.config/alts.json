@@ -323,6 +323,13 @@
 	},
 
 
+	"piped.kavin.rocks": {
+		"description": "Piped (YouTube proxy)",
+		"thumb_url": "https://piped.kavin.rocks/img/icons/logo.svg",
+		"service": "youtube.com"
+	},
+
+
 	"tube.cadence.moe": {
 		"description": "CloudTube (YouTube proxy)",
 		"service": "youtube.com"
