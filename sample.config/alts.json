@@ -1,4 +1,9 @@
 {
+	"nitter.1d4.us": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.1d4.us/logo.png",
+		"service": "twitter.com"
+	},
 	"nitter.net": {
 		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.net/logo.png",
@@ -29,11 +34,6 @@
 		"thumb_url": "https://nitter.fdn.fr/logo.png",
 		"service": "twitter.com"
 	},
-	"nitter.1d4.us": {
-		"description": "Nitter (Twitter proxy)",
-		"thumb_url": "https://nitter.1d4.us/logo.png",
-		"service": "twitter.com"
-	},
 	"nitter.kavin.rocks": {
 		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.kavin.rocks/logo.png",
@@ -47,11 +47,6 @@
 	"nitter.cc": {
 		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.cc/logo.png",
-		"service": "twitter.com"
-	},
-	"nitter.vxempire.xyz": {
-		"description": "Nitter (Twitter proxy)",
-		"thumb_url": "https://nitter.vxempire.xyz/logo.png",
 		"service": "twitter.com"
 	},
 	"nitter.unixfox.eu": {
@@ -99,11 +94,6 @@
 		"thumb_url": "https://birdsite.xanny.family/logo.png",
 		"service": "twitter.com"
 	},
-	"nitter.40two.app": {
-		"description": "Nitter (Twitter proxy)",
-		"thumb_url": "https://nitter.40two.app/logo.png",
-		"service": "twitter.com"
-	},
 	"nitter.skrep.in": {
 		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.skrep.in/logo.png",
@@ -129,18 +119,58 @@
 		"thumb_url": "https://twitr.gq/logo.png",
 		"service": "twitter.com"
 	},
-	"nitter.koyu.space": {
-		"description": "Nitter (Twitter proxy)",
-		"thumb_url": "https://nitter.koyu.space/logo.png",
-		"service": "twitter.com"
-	},
 	"nitter.dark.fail": {
 		"description": "Nitter (Twitter proxy)",
 		"thumb_url": "https://nitter.dark.fail/logo.png",
 		"service": "twitter.com"
 	},
+	"nitter.moomoo.me": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.moomoo.me/logo.png",
+		"service": "twitter.com"
+	},
+	"bird.trom.tf": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://bird.trom.tf/logo.png",
+		"service": "twitter.com"
+	},
+	"nitter.mha.fi": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.mha.fi/logo.png",
+		"service": "twitter.com"
+	},
+	"nitter.bcow.xyz": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.bcow.xyz/logo.png",
+		"service": "twitter.com"
+	},
+	"bird.nogafam.es": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://bird.nogafam.es/logo.png",
+		"service": "twitter.com"
+	},
+	"twitter.censors.us": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://twitter.censors.us/logo.png",
+		"service": "twitter.com"
+	},
+	"nitter.grimneko.de": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.grimneko.de/logo.png",
+		"service": "twitter.com"
+	},
+	"nitter.koyu.space": {
+		"description": "Nitter (Twitter proxy)",
+		"thumb_url": "https://nitter.koyu.space/logo.png",
+		"service": "twitter.com"
+	},
 
 
+	"ytprivate.com": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://ytprivate.com/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
 	"invidious.snopyta.org": {
 		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.snopyta.org/apple-touch-icon.png",
@@ -161,6 +191,16 @@
 		"thumb_url": "https://invidious.kavin.rocks/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
+	"invidious-us.kavin.rocks": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.kavin.rocks/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidious-jp.kavin.rocks": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.kavin.rocks/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
 	"invidious.048596.xyz": {
 		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://invidious.048596.xyz/apple-touch-icon.png",
@@ -169,11 +209,6 @@
 	"vid.puffyan.us": {
 		"description": "Invidious (YouTube proxy)",
 		"thumb_url": "https://vid.puffyan.us/apple-touch-icon.png",
-		"service": "youtube.com"
-	},
-	"ytprivate.com": {
-		"description": "Invidious (YouTube proxy)",
-		"thumb_url": "https://ytprivate.com/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
 	"invidious.namazso.eu": {
@@ -246,6 +281,46 @@
 		"thumb_url": "https://notyoutube.com/apple-touch-icon.png",
 		"service": "youtube.com"
 	},
+	"inv.riverside.rocks": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://inv.riverside.rocks/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"y.com.cm": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://y.com.cm/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidio.xamh.de": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidio.xamh.de/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidious.hub.ne.kr": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.hub.ne.kr/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"youtube.076.ne.jp": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://youtube.076.ne.jp/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidious.noho.st": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.noho.st/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"invidious.s1gm4.eu": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://invidious.s1gm4.eu/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
+	"ytb.trom.tf": {
+		"description": "Invidious (YouTube proxy)",
+		"thumb_url": "https://ytb.trom.tf/apple-touch-icon.png",
+		"service": "youtube.com"
+	},
 
 
 	"tube.cadence.moe": {
@@ -277,6 +352,11 @@
 	"bibliogram.ethibox.fr": {
 		"description": "Bibliogram (Instagram proxy)",
 		"thumb_url": "https://bibliogram.ethibox.fr/apple-touch-icon.png",
+		"service": "instagram.com"
+	},
+	"insta.trom.tf": {
+		"description": "Bibliogram (Instagram proxy)",
+		"thumb_url": "https://insta.trom.tf/apple-touch-icon.png",
 		"service": "instagram.com"
 	},
 	"bibliogram.hamster.dance": {
@@ -329,6 +409,16 @@
 	"teddit.domain.glass": {
 		"description": "Teddit (Reddit proxy)",
 		"thumb_url": "https://teddit.domain.glass/favicon.png",
+		"service": "reddit.com"
+	},
+	"snoo.ioens.is": {
+		"description": "Teddit (Reddit proxy)",
+		"thumb_url": "https://snoo.ioens.is/favicon.png",
+		"service": "reddit.com"
+	},
+	"teddit.httpjames.space": {
+		"description": "Teddit (Reddit proxy)",
+		"thumb_url": "https://teddit.httpjames.space/favicon.png",
 		"service": "reddit.com"
 	},
 
@@ -396,6 +486,31 @@
 	"libreddit.domain.glass": {
 		"description": "Libreddit (Reddit proxy)",
 		"thumb_url": "https://libreddit.domain.glass/touch-icon-iphone.png",
+		"service": "reddit.com"
+	},
+	"libreddit.trevorthalacker.com": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.trevorthalacker.com/touch-icon-iphone.png",
+		"service": "reddit.com"
+	},
+	"reddit.artemislena.eu": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://reddit.artemislena.eu/touch-icon-iphone.png",
+		"service": "reddit.com"
+	},
+	"reddit.git-bruh.duckdns.org": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://reddit.git-bruh.duckdns.org/touch-icon-iphone.png",
+		"service": "reddit.com"
+	},
+	"r.nf": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://r.nf/touch-icon-iphone.png",
+		"service": "reddit.com"
+	},
+	"libreddit.awesomehub.io": {
+		"description": "Libreddit (Reddit proxy)",
+		"thumb_url": "https://libreddit.awesomehub.io/touch-icon-iphone.png",
 		"service": "reddit.com"
 	},
 
