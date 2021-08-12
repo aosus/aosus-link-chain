@@ -78,6 +78,25 @@ Your bot should now be ready.
 See `linkchanbot(1)`
 
 
+Updating
+--------
+
+linkchanbot comes with a preconfigured list of 'alts' (proxies) and
+other configuration data. This data is updated with new commits. On
+start-up, linkchanbot copies this data in the absence of locally
+configured data to `XDG_CONFIG_HOME/linkchan` (`bot.cfg` is untouched).
+
+To fully update linkchanbot and its configuration data, perform a normal
+installtion with the latest commit, then remove (and backup) the local
+configuration files and restart linkchanbot.
+
+	shell:
+		$ rm ~/.config/linkchan/alts.json
+		$ rm ~/.config/linkchan/services.json
+	Telegram:
+		/restart  (or manaully in the shell)
+
+
 Usage
 -----
 
