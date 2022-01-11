@@ -234,7 +234,10 @@ def mk_status(upd, utype, dl='::', text=None):
     chat = upd.effective_chat
     if chat:
         chat_id   = chat.id
-        chat_name = chat.link or chat.title or chat.full_name
+        try:
+            chat_name = chat.link or chat.title or chat.full_name
+        except AttributeError:
+            chat_name = None
         chat_name = chat_name.replace('https://t.me/', '@')
     else:
         chat_id   = '#'
