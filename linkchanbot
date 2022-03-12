@@ -62,6 +62,11 @@ EXAMPLES = {
         "https://www.reddit.com/r/wallpaper/comments/m98fnz/great_art_by_mike_fazbear_3840x2160/",
         "https://www.reddit.com/r/reddit.com/comments/17913/reddit_now_supports_comments/c51/",
     ],
+    "Medium": [
+        "https://medium.com/@nikitonsky/medium-is-a-poor-choice-for-blogging-bb0048d19133",
+        "https://medium.com/@ftrain/big-data-small-effort-b62607a43a8c",
+        "https://medium.com/@swalahamani/the-art-of-computer-programming-9fbd8fd56265",
+    ],
 }
 
 
@@ -333,7 +338,7 @@ def cb_start(upd, ctx):
     # outgoing text
     msg = f"""
 @{bot_username} cleans & proxies your share links.
-I support _Twitter_, _YouTube_, _Instagram_ and _Reddit_.
+I support _Twitter_, _YouTube_, _Instagram_, _Reddit_, and _Medium_.
 
 *Try inline*
     Type:  `@{bot_username} <link>`
@@ -388,6 +393,7 @@ See /start
 - youtube.com => Inividious, CloudTube
 - instagram.com => Bibliogram
 - reddit.com => Teddit, Libreddit, Old Reddit
+- medium.com => Scribe
 
 *NOTES*
 For in-chat replies, default proxies are used.  For inline queries, a menu of proxies are available.  To cycle through proxy menus, append '#' to your link.
