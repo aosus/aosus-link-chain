@@ -43,9 +43,9 @@ TEMPLATE = """
 
 EXAMPLES = {
     "Twitter": [
+        "https://twitter.com/BeautyOfSpace/status/332490279376519169",
         "https://twitter.com/anvxmes/status/1375175567587356673",
         "https://twitter.com/Chrisvb700/status/1373169970117496833",
-        "https://twitter.com/HdWallpaperCart/status/1374405341954285572",
     ],
     "YouTube": [
         "https://www.youtube.com/watch?v=J---aiyznGQ#",
