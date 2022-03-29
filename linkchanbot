@@ -238,12 +238,15 @@ def mk_status(upd, utype, dl='::', text=None):
     if upd.effective_user:
         user_id   = upd.effective_user.id
         user_name = upd.effective_user.name
-    elif upd.channel_post:
+    elif upd.channel_post and upd.channel_post.from_user:
         user_id   = upd.channel_post.from_user.id
         user_name = upd.channel_post.from_user.name
     elif upd.poll:
-        user_id   = '<Poll>'
-        user_name = '<Poll>'
+        user_id   = '<poll>'
+        user_name = '<poll>'
+    else:
+        user_id   = '<unknown>'
+        user_name = '<unknown>'
 
     chat = upd.effective_chat
     if chat:
