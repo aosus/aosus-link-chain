@@ -673,8 +673,7 @@ def main():
     dp.add_handler(ChosenInlineResultHandler(cb_chosen_inline_result))
 
     dp.add_handler(MessageHandler(
-        # (not) messages from this bot
-        ~Filters.via_bot(username=BOT_USERNAME) & (
+        (
             # non-edited messages
             Filters.update.message | Filters.update.channel_post
         ) & (
@@ -683,6 +682,14 @@ def main():
             Filters.entity(MessageEntity.TEXT_LINK) |
             Filters.caption_entity(MessageEntity.URL) |
             Filters.caption_entity(MessageEntity.TEXT_LINK)
+        ) & (
+            # not messages created via this bot (inline queries, etc.)
+            ~Filters.via_bot(username=BOT_USERNAME)
+        ) & ~(
+            # not messages from bot forwarded to group chats
+            # (forwarded to bot's private chat is OK)
+            Filters.forwarded_from(username=BOT_USERNAME)
+            & ~Filters.chat_type.private
         ),
         cb_link_handler
     ))
