@@ -511,9 +511,17 @@ def cb_link_handler(upd, ctx):
     Handles messages with links (see main > MessageHandler).
     Replies with `TEMPLATE` with new links.
     """
-    if not upd.message:
-        # Will have been logged as [ukn] in @logged
-        return
+    bot_channel_id = os.environ.get("LINKCHAN_CHAT_ID")
+    try:
+        if (not upd.messag) or (
+            # There is a channel ID set, and the message is not from the channel
+            bot_channel_id
+            and upd.message.chat_id != int(bot_channel_id)
+        ):
+            # Will have been logged as [ukn] in @logged
+            return
+    except:
+        assert False, "Invalid `LINKCHAN_CHAT_ID`"
 
     links = []
 
