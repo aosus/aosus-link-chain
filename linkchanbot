@@ -423,6 +423,7 @@ See /help, /about or @linkchan\_updates
         disable_web_page_preview=True,
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=reply_markup,
+        disable_notification=True,
     )
 
 
@@ -467,7 +468,10 @@ See /about or @linkchan\_updates.
 
     # Send message
     upd.message.reply_text(
-        msg, disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN
+        msg,
+        disable_web_page_preview=True,
+        parse_mode=ParseMode.MARKDOWN,
+        disable_notification=True,
     )
 
 
@@ -496,7 +500,9 @@ License
 """
 
     # Send message
-    upd.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+    upd.message.reply_text(
+        msg, parse_mode=ParseMode.MARKDOWN, disable_notification=True
+    )
 
 
 def examples(upd, ctx):
@@ -527,6 +533,7 @@ def examples(upd, ctx):
         "Try inline query examples",
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=reply_markup,
+        disable_notification=True,
     )
 
 
@@ -572,7 +579,9 @@ def cb_link_handler(upd, ctx):
         logging.info(mk_status(upd, "out", "::", f"{newlink}"))
 
         msg = TEMPLATE.format(new=newlink, old=oldlink)
-        upd.message.reply_text(msg, parse_mode=ParseMode.HTML)
+        upd.message.reply_text(
+            msg, parse_mode=ParseMode.HTML, disable_notification=True
+        )
 
 
 @logged
