@@ -1,10 +1,13 @@
 linkchanbot
 ===========
 
+> Note: This is a fork from <https://sr.ht/~torresjrjr/linkchanbot>
+
 A Telegram Bot which sanitises and substitutes share links
 with lightweight, privacy respecting proxy frontend alternatives.
 
 - Main instance: [@linkchanbot](https://t.me/linkchanbot)
+- Aosus instance: [@aosuslinkchainbot](https://t.me/aosuslinkchainbot)
 - User updates: [@linkchan\_updates](https://t.me/linkchan_updates)
 
 ![screenshot](https://i.imgur.com/WnbOD5c.jpg)
