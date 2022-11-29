@@ -85,9 +85,11 @@ def whitelist_chat(upd) -> bool:
             int, bot_channel_id.replace(" ", "").split(",")
         ):
             # Will have been logged as [ukn] in @logged
+            print(f"Message from {upd.message.chat_id} not whitelisted")
             return False
     except:
         assert False, "Invalid `LINKCHAN_CHAT_ID`"
+    print(f"Message from {upd.message.chat_id} whitelisted")
     return True
 
 
@@ -534,7 +536,7 @@ def cb_link_handler(upd, ctx):
     Handles messages with links (see main > MessageHandler).
     Replies with `TEMPLATE` with new links.
     """
-    if not upd.messag:
+    if not upd.message:
         # Will have been logged as [ukn] in @logged
         return
 
