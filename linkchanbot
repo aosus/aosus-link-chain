@@ -5,14 +5,20 @@ for lightweight, privacy respecting proxy alternatives.
 """
 
 from telegram import (
-    MessageEntity, ParseMode,
-    InlineQueryResultArticle, InputTextMessageContent,
-    InlineKeyboardMarkup, InlineKeyboardButton,
+    MessageEntity,
+    ParseMode,
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
 )
 from telegram.ext import (
-    Updater, Filters,
-    MessageHandler, CommandHandler,
-    InlineQueryHandler, ChosenInlineResultHandler,
+    Updater,
+    Filters,
+    MessageHandler,
+    CommandHandler,
+    InlineQueryHandler,
+    ChosenInlineResultHandler,
 )
 from telegram.constants import MAX_INLINE_QUERY_RESULTS as MAX_RESULTS
 from telegram import error
@@ -72,20 +78,22 @@ EXAMPLES = {
 
 # Initialisation
 
+
 def args():
     """
     Parse command-line arguments. Provide basic help interface.
     """
     parser = argparse.ArgumentParser(
-        prog = "linkchanbot",
-        formatter_class = argparse.RawDescriptionHelpFormatter,
-        description = \
-            "A Telegram bot that substitutes common share link with\n"
-            "lightweight, privacy respecting proxy alternatives.",
-        epilog = f"linkchanbot {VERSION}"
+        prog="linkchanbot",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="A Telegram bot that substitutes common share link with\n"
+        "lightweight, privacy respecting proxy alternatives.",
+        epilog=f"linkchanbot {VERSION}",
     )
-    parser.add_argument('-v', '--version', help='print version and exit', action='store_true')
-    parser.add_argument('-l', '--logfile', help='specify the log file')
+    parser.add_argument(
+        "-v", "--version", help="print version and exit", action="store_true"
+    )
+    parser.add_argument("-l", "--logfile", help="specify the log file")
 
     args = parser.parse_args()
 
@@ -104,23 +112,27 @@ def init(args):
     Has side effects.  See globals below.
     """
     # Filesystem
-    cache_home = pathlib.Path(os.getenv('XDG_CACHE_HOME', os.getenv('HOME') + '/.cache'))
-    cache_dir = cache_home/'linkchan'
+    cache_home = pathlib.Path(
+        os.getenv("XDG_CACHE_HOME", os.getenv("HOME") + "/.cache")
+    )
+    cache_dir = cache_home / "linkchan"
     cache_dir.mkdir(parents=True, exist_ok=True)  # EFFECT
 
-    config_home = pathlib.Path(os.getenv('XDG_CONFIG_HOME', os.getenv('HOME') + '/.config'))
-    config_dir = config_home/'linkchan'
+    config_home = pathlib.Path(
+        os.getenv("XDG_CONFIG_HOME", os.getenv("HOME") + "/.config")
+    )
+    config_dir = config_home / "linkchan"
     config_dir.mkdir(parents=True, exist_ok=True)  # EFFECT
 
-    sys_share_dir = pathlib.Path('/usr/local/share/linkchan')
+    sys_share_dir = pathlib.Path("/usr/local/share/linkchan")
 
-    config_files = ('bot.cfg', 'alts.json', 'services.json')
+    config_files = ("bot.cfg", "alts.json", "services.json")
 
     # Copy system global config files to local XDG config dir.
     # Fail if files not found.
     for file in config_files:
-        locfile = config_dir/file
-        sysfile = sys_share_dir/file
+        locfile = config_dir / file
+        sysfile = sys_share_dir / file
 
         if locfile.is_file():
             continue
@@ -135,7 +147,7 @@ def init(args):
                 exit(1)
 
     # Logging
-    LOGFILE = args.logfile or os.getenv('LINKCHAN_LOGFILE') or cache_dir/'log'
+    LOGFILE = args.logfile or os.getenv("LINKCHAN_LOGFILE") or cache_dir / "log"
 
     try:
         handler = logging.handlers.WatchedFileHandler(LOGFILE)
@@ -144,17 +156,17 @@ def init(args):
         exit(1)
 
     logging.basicConfig(
-        format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level = logging.INFO,
-        handlers = (handler,)
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.INFO,
+        handlers=(handler,),
     )
 
     # Config
-    TOKEN = os.getenv('LINKCHAN_TOKEN')
-    ADMIN = os.getenv('LINKCHAN_ADMIN')
+    TOKEN = os.getenv("LINKCHAN_TOKEN")
+    ADMIN = os.getenv("LINKCHAN_ADMIN")
 
     BOT_CFG = configparser.ConfigParser()
-    BOT_CFG.read(config_dir/'bot.cfg')
+    BOT_CFG.read(config_dir / "bot.cfg")
 
     TOKEN = TOKEN or BOT_CFG.get("auth", "token", fallback=False)
     ADMIN = ADMIN or BOT_CFG.get("auth", "admin", fallback=False)
@@ -167,31 +179,30 @@ def init(args):
     global SERVICES
 
     try:
-        with open(config_dir/'alts.json', 'r') as file:
+        with open(config_dir / "alts.json", "r") as file:
             ALTS = json.load(file)
-        with open(config_dir/'services.json', 'r') as file:
+        with open(config_dir / "services.json", "r") as file:
             SERVICES = json.load(file)
     except FileNotFoundError as e:
         stderr("Error: Missing config file:", e)
         exit(1)
     except json.decoder.JSONDecodeError as e:
         stderr(
-            f"Error: JSON syntax error in '{file.name}':", e,
+            f"Error: JSON syntax error in '{file.name}':",
+            e,
         )
         exit(1)
 
     # Validate ALTS
     for altsite, alt in ALTS.items():
-        if 'service' not in alt:
-            logging.warn(
-                f"alts.json: '{altsite}' has no 'service' value, ignored"
-            )
+        if "service" not in alt:
+            logging.warn(f"alts.json: '{altsite}' has no 'service' value, ignored")
 
     return TOKEN, ADMIN, LOGFILE
 
 
-
 # Util
+
 
 def stderr(*args, **kwargs):
     """
@@ -199,26 +210,30 @@ def stderr(*args, **kwargs):
     """
     print(*args, **kwargs, file=sys.stderr)
 
+
 def logged(old_cb_func):
     """
     Wraps callback functions, logs incomming telegram updates.
     """
+
     @functools.wraps(old_cb_func)
     def new_cb_func(upd, ctx, **kwargs):
         if upd.message and upd.message.text:
-            status = mk_status(upd, 'msg', '<:', oneline(upd.message.text))
+            status = mk_status(upd, "msg", "<:", oneline(upd.message.text))
         elif upd.message and upd.message.caption:
-            status = mk_status(upd, 'cap', '<:', oneline(upd.message.caption))
+            status = mk_status(upd, "cap", "<:", oneline(upd.message.caption))
         elif upd.message:
-            status = mk_status(upd, 'msg', '#:', upd.effective_message)
+            status = mk_status(upd, "msg", "#:", upd.effective_message)
         elif upd.chosen_inline_result:
-            status = mk_status(upd, 'cir', '::', oneline(upd.chosen_inline_result.result_id))
+            status = mk_status(
+                upd, "cir", "::", oneline(upd.chosen_inline_result.result_id)
+            )
         elif upd.inline_query:
-            status = mk_status(upd, 'ilq', '?:', oneline(upd.inline_query.query))
+            status = mk_status(upd, "ilq", "?:", oneline(upd.inline_query.query))
         elif upd.effective_message:
-            status = mk_status(upd, 'ukn', '#:', upd.effective_message)
+            status = mk_status(upd, "ukn", "#:", upd.effective_message)
         else:
-            status = mk_status(upd, 'ukn', '#:')
+            status = mk_status(upd, "ukn", "#:")
 
         logging.info(status)
         print(status)
@@ -228,37 +243,37 @@ def logged(old_cb_func):
     return new_cb_func
 
 
-def mk_status(upd, utype, dl='::', text=None):
+def mk_status(upd, utype, dl="::", text=None):
     """
     Prepares a standardised string for logging.
     Called by wrapped callbacks (see @logged)
     or by callbacks for terminal output.
     """
-    uid       = upd.update_id
+    uid = upd.update_id
     if upd.effective_user:
-        user_id   = upd.effective_user.id
+        user_id = upd.effective_user.id
         user_name = upd.effective_user.name
     elif upd.channel_post and upd.channel_post.from_user:
-        user_id   = upd.channel_post.from_user.id
+        user_id = upd.channel_post.from_user.id
         user_name = upd.channel_post.from_user.name
     elif upd.poll:
-        user_id   = '<poll>'
-        user_name = '<poll>'
+        user_id = "<poll>"
+        user_name = "<poll>"
     else:
-        user_id   = '<unknown>'
-        user_name = '<unknown>'
+        user_id = "<unknown>"
+        user_name = "<unknown>"
 
     chat = upd.effective_chat
     if chat:
-        chat_id   = chat.id
+        chat_id = chat.id
         try:
             chat_name = chat.link or chat.title or chat.full_name
         except AttributeError:
             chat_name = None
-        chat_name = chat_name.replace('https://t.me/', '@')
+        chat_name = chat_name.replace("https://t.me/", "@")
     else:
-        chat_id   = '#'
-        chat_name = '#'
+        chat_id = "#"
+        chat_name = "#"
 
     if not text:
         if upd.effective_message:
@@ -279,20 +294,20 @@ def mk_newlinks(link):
         [False]     A list with a single False element.
     """
     # Prepare and parse link string
-    if not link.startswith('https://') and not link.startswith('http://'):
-        link = 'https://' + link
+    if not link.startswith("https://") and not link.startswith("http://"):
+        link = "https://" + link
 
     url = urlparse(link)
 
     # Enforce HTTPS
-    url = url._replace(scheme='https')
+    url = url._replace(scheme="https")
 
     # Recognise service
     if url.netloc in SERVICES.keys():
         service = url.netloc
     else:
         for main_domain, service_data in SERVICES.items():
-            if url.netloc in service_data['alt_domains']:
+            if url.netloc in service_data["alt_domains"]:
                 service = main_domain
                 break
         else:
@@ -300,27 +315,25 @@ def mk_newlinks(link):
             return [False]
 
     # Keep only allowed URL queries
-    allowed_queries = SERVICES[service].get('query_whitelist') or []
+    allowed_queries = SERVICES[service].get("query_whitelist") or []
     old_queries = parse_qs(url.query, keep_blank_values=True)
     new_queries = {
-        query:v for (query,v) in old_queries.items()
-        if query in allowed_queries
+        query: v for (query, v) in old_queries.items() if query in allowed_queries
     }
-    url = url._replace(
-        query = urlencode(new_queries, doseq=True)
-    )
+    url = url._replace(query=urlencode(new_queries, doseq=True))
 
     # Find alts for replacing `service`
     applicable_alts = {
-        altsite: alt for (altsite, alt) in ALTS.items()
-        if alt.get('service') == service
+        altsite: alt for (altsite, alt) in ALTS.items() if alt.get("service") == service
     }
 
     # Make new substitutes
-    newlinks = list(map(
-        lambda newdomain: url._replace(netloc=newdomain).geturl(),
-        applicable_alts.keys()
-    ))
+    newlinks = list(
+        map(
+            lambda newdomain: url._replace(netloc=newdomain).geturl(),
+            applicable_alts.keys(),
+        )
+    )
 
     return newlinks
 
@@ -330,11 +343,12 @@ def oneline(s: str) -> str:
     """
     Converts newlines and tabs to ASCII representations.
     """
-    s = s.replace('\\', '\\\\')
-    return s.replace('\n', '\\n').replace('\t', '\\t')
+    s = s.replace("\\", "\\\\")
+    return s.replace("\n", "\\n").replace("\t", "\\t")
 
 
 # Callback Handlers
+
 
 @logged
 def cb_start(upd, ctx):
@@ -344,11 +358,11 @@ def cb_start(upd, ctx):
 
     # If user pressed "See examples", they were sent to bot PMs
     # to /start with the payload "examples".
-    if ctx.args and ctx.args[0] == 'examples':
+    if ctx.args and ctx.args[0] == "examples":
         examples(upd, ctx)
         return
 
-    bot_username = ctx.bot.get_me().username.replace('_', '\\_')
+    bot_username = ctx.bot.get_me().username.replace("_", "\\_")
 
     # outgoing text
     msg = f"""
@@ -370,22 +384,24 @@ See /help, /about or @linkchan\_updates
 
     # Inline keyboard with "Try inline" button.
     # See: https://core.telegram.org/bots/api#inlinekeyboardbutton
-    reply_markup = InlineKeyboardMarkup([
+    reply_markup = InlineKeyboardMarkup(
         [
-            InlineKeyboardButton(
-                'Try inline',
-                # Launches inline mode on button press with no query
-                switch_inline_query_current_chat = '',
-            ),
-        ],
-    ])
+            [
+                InlineKeyboardButton(
+                    "Try inline",
+                    # Launches inline mode on button press with no query
+                    switch_inline_query_current_chat="",
+                ),
+            ],
+        ]
+    )
 
     # Send message
     upd.message.reply_text(
         msg,
-        disable_web_page_preview = True,
-        parse_mode = ParseMode.MARKDOWN,
-        reply_markup = reply_markup,
+        disable_web_page_preview=True,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=reply_markup,
     )
 
 
@@ -393,7 +409,7 @@ def cb_help(upd, ctx):
     """
     /help callback
     """
-    bot_username = ctx.bot.get_me().username.replace('_', '\\_')
+    bot_username = ctx.bot.get_me().username.replace("_", "\\_")
 
     # Outgoing text
     msg = f"""
@@ -427,9 +443,7 @@ See /about or @linkchan\_updates.
 
     # Send message
     upd.message.reply_text(
-        msg,
-        disable_web_page_preview = True,
-        parse_mode = ParseMode.MARKDOWN
+        msg, disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN
     )
 
 
@@ -438,7 +452,7 @@ def cb_about(upd, ctx):
     """
     /about callback
     """
-    bot_username = ctx.bot.get_me().username.replace('_', '\\_')
+    bot_username = ctx.bot.get_me().username.replace("_", "\\_")
 
     # Outgoing text
     msg = f"""
@@ -455,10 +469,7 @@ License
 """
 
     # Send message
-    upd.message.reply_text(
-        msg,
-        parse_mode = ParseMode.MARKDOWN
-    )
+    upd.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
 def examples(upd, ctx):
@@ -470,25 +481,26 @@ def examples(upd, ctx):
 
     # Inline keyboard with a button for each example in `EXAMPLES`.
     # See: https://core.telegram.org/bots/api#inlinekeyboardbutton
-    reply_markup = InlineKeyboardMarkup([
+    reply_markup = InlineKeyboardMarkup(
         [
-            InlineKeyboardButton(
-                service,
-                # Lauches inline mode on button press
-                # with example as the query.
-                switch_inline_query_current_chat = links[0],
-            )
-        ] \
+            [
+                InlineKeyboardButton(
+                    service,
+                    # Lauches inline mode on button press
+                    # with example as the query.
+                    switch_inline_query_current_chat=links[0],
+                )
+            ]
             for service, links in EXAMPLES.items()
-    ])
+        ]
+    )
 
     # Send message
     upd.message.reply_text(
         "Try inline query examples",
-        parse_mode = ParseMode.MARKDOWN,
-        reply_markup = reply_markup,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=reply_markup,
     )
-
 
 
 @logged
@@ -512,28 +524,22 @@ def cb_link_handler(upd, ctx):
 
     for ent, link in entities.items():
         link = oneline(link)
-        if ent['type'] == 'url':
-            links += [ link ]
-        if ent['type'] == 'text_link':
-            links += [ ent['url'] ]
+        if ent["type"] == "url":
+            links += [link]
+        if ent["type"] == "text_link":
+            links += [ent["url"]]
 
     # Filter for links which have substitutes.
     # mk_newlinks() returns either [str...] or [False]
-    oldlinks = list(filter(
-        lambda old: mk_newlinks(old)[0],
-        links
-    ))
+    oldlinks = list(filter(lambda old: mk_newlinks(old)[0], links))
 
     # Generate corresponding newlinks,
     # by picking the first suggestion from mk_newlinks()
-    newlinks = list(map(
-        lambda old: mk_newlinks(old)[0],
-        oldlinks
-    ))
+    newlinks = list(map(lambda old: mk_newlinks(old)[0], oldlinks))
 
     # Send substitutes as separate messages
     for oldlink, newlink in zip(oldlinks, newlinks):
-        logging.info(mk_status(upd, 'out', '::', f"{newlink}"))
+        logging.info(mk_status(upd, "out", "::", f"{newlink}"))
 
         msg = TEMPLATE.format(new=newlink, old=oldlink)
         upd.message.reply_text(msg, parse_mode=ParseMode.HTML)
@@ -549,47 +555,40 @@ def cb_inline_query(upd, ctx):
 
     # If the query string is not a URL,
     # return a menu of a random sample of alts.
-    if query == '' or not newlinks[0]:
+    if query == "" or not newlinks[0]:
         nr_results = len(ALTS) if len(ALTS) <= MAX_RESULTS else MAX_RESULTS
 
         results = [
             InlineQueryResultArticle(
-                id    = altsite,
-                title = altsite,
-                url   = altsite,
-                description = alt.get('description', 'Alt service'),
-                thumb_url   = alt.get('thumb_url'),
-                input_message_content = InputTextMessageContent(altsite)
-            ) \
-                for altsite, alt in random.sample(
-                    sorted(ALTS.items()), nr_results
-                )
+                id=altsite,
+                title=altsite,
+                url=altsite,
+                description=alt.get("description", "Alt service"),
+                thumb_url=alt.get("thumb_url"),
+                input_message_content=InputTextMessageContent(altsite),
+            )
+            for altsite, alt in random.sample(sorted(ALTS.items()), nr_results)
         ]
     # Otherwise, return a menu of a random sample of newlinks
     # and their alt metadata to populate the inline results menu.
     else:
-        alts = {
-            newlink: ALTS[urlparse(newlink).netloc]
-            for newlink in newlinks
-        }
+        alts = {newlink: ALTS[urlparse(newlink).netloc] for newlink in newlinks}
 
         nr_results = len(alts) if len(alts) <= MAX_RESULTS else MAX_RESULTS
 
         results = [
             InlineQueryResultArticle(
-                id    = f"{upd.update_id}+{urlparse(newlink).netloc}",
-                title = urlparse(newlink).netloc,
-                url   = newlink,
-                description = alt.get('description', 'Alt service'),
-                thumb_url   = alt.get('thumb_url'),
-                input_message_content = InputTextMessageContent(
+                id=f"{upd.update_id}+{urlparse(newlink).netloc}",
+                title=urlparse(newlink).netloc,
+                url=newlink,
+                description=alt.get("description", "Alt service"),
+                thumb_url=alt.get("thumb_url"),
+                input_message_content=InputTextMessageContent(
                     TEMPLATE.format(new=newlink, old=query),
                     parse_mode=ParseMode.HTML,
-                )
-            ) \
-                for newlink, alt in random.sample(
-                    sorted(alts.items()), nr_results
-                )
+                ),
+            )
+            for newlink, alt in random.sample(sorted(alts.items()), nr_results)
         ]
 
     bot_username = ctx.bot.get_me().username
@@ -601,7 +600,7 @@ def cb_inline_query(upd, ctx):
         # to open the bot chat.
         # See: https://core.telegram.org/bots/api#answerinlinequery
         switch_pm_text=f"Open @{bot_username}",
-        switch_pm_parameter='inline',
+        switch_pm_parameter="inline",
     )
 
 
@@ -638,8 +637,8 @@ def cb_error(update, context):
         print("Error: TimedOut:", e, update)
 
 
-
 # Main
+
 
 def main():
     TOKEN, ADMIN, LOGFILE = init(args())
@@ -659,40 +658,45 @@ def main():
         exit(1)
 
     BOT_USERNAME = bot_user.username
-    BOT_ID       = bot_user.id
-
+    BOT_ID = bot_user.id
 
     dp = updater.dispatcher
     dp.add_error_handler(cb_error)
 
-    dp.add_handler(CommandHandler('start', cb_start))
-    dp.add_handler(CommandHandler('help', cb_help))
-    dp.add_handler(CommandHandler('about', cb_about))
+    dp.add_handler(CommandHandler("start", cb_start))
+    dp.add_handler(CommandHandler("help", cb_help))
+    dp.add_handler(CommandHandler("about", cb_about))
 
     dp.add_handler(InlineQueryHandler(cb_inline_query))
     dp.add_handler(ChosenInlineResultHandler(cb_chosen_inline_result))
 
-    dp.add_handler(MessageHandler(
-        (
-            # non-edited messages
-            Filters.update.message | Filters.update.channel_post
-        ) & (
-            # messages with links
-            Filters.entity(MessageEntity.URL) |
-            Filters.entity(MessageEntity.TEXT_LINK) |
-            Filters.caption_entity(MessageEntity.URL) |
-            Filters.caption_entity(MessageEntity.TEXT_LINK)
-        ) & (
-            # not messages created via this bot (inline queries, etc.)
-            ~Filters.via_bot(username=BOT_USERNAME)
-        ) & ~(
-            # not messages from bot forwarded to group chats
-            # (forwarded to bot's private chat is OK)
-            Filters.forwarded_from(username=BOT_USERNAME)
-            & ~Filters.chat_type.private
-        ),
-        cb_link_handler
-    ))
+    dp.add_handler(
+        MessageHandler(
+            (
+                # non-edited messages
+                Filters.update.message
+                | Filters.update.channel_post
+            )
+            & (
+                # messages with links
+                Filters.entity(MessageEntity.URL)
+                | Filters.entity(MessageEntity.TEXT_LINK)
+                | Filters.caption_entity(MessageEntity.URL)
+                | Filters.caption_entity(MessageEntity.TEXT_LINK)
+            )
+            & (
+                # not messages created via this bot (inline queries, etc.)
+                ~Filters.via_bot(username=BOT_USERNAME)
+            )
+            & ~(
+                # not messages from bot forwarded to group chats
+                # (forwarded to bot's private chat is OK)
+                Filters.forwarded_from(username=BOT_USERNAME)
+                & ~Filters.chat_type.private
+            ),
+            cb_link_handler,
+        )
+    )
 
     if ADMIN:
         # Admin callbacks
@@ -713,7 +717,7 @@ def main():
             /restart callback. Restarts the bot.
             See handler for authorisation.
             """
-            status = mk_status(upd, 'cmd', '::', "Authorised - restarting bot...")
+            status = mk_status(upd, "cmd", "::", "Authorised - restarting bot...")
             logging.info(status)
             print(status)
             upd.message.reply_text(status)
@@ -726,7 +730,7 @@ def main():
             /shutdown callback. Shuts down the bot.
             See handler for authorisation.
             """
-            status = mk_status(upd, 'cmd', '::', "Authorised - shutdown SIGINT")
+            status = mk_status(upd, "cmd", "::", "Authorised - shutdown SIGINT")
             logging.info(status)
             print(status)
             upd.message.reply_text(status)
@@ -734,14 +738,14 @@ def main():
             os.kill(os.getpid(), signal.SIGINT)
 
         # Admin handlers
-        dp.add_handler(CommandHandler(
-            'restart', cb_restart,
-            filters=Filters.user(username=ADMIN)
-        ))
-        dp.add_handler(CommandHandler(
-            'shutdown', cb_shutdown,
-            filters=Filters.user(username=ADMIN)
-        ))
+        dp.add_handler(
+            CommandHandler("restart", cb_restart, filters=Filters.user(username=ADMIN))
+        )
+        dp.add_handler(
+            CommandHandler(
+                "shutdown", cb_shutdown, filters=Filters.user(username=ADMIN)
+            )
+        )
 
     # Start serving
     stderr(f"linkchanbot {VERSION}")
@@ -756,5 +760,5 @@ def main():
     return
 
 
-if __name__=='__main__':
+if __name__ == "__main__":
     main()
