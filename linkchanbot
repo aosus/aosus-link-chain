@@ -77,6 +77,18 @@ EXAMPLES = {
 }
 
 
+def whitelist_chat(upd) -> bool:
+    bot_channel_id = os.environ.get("LINKCHAN_CHAT_ID")
+    # There is a channel ID set, and the message is not from the channel
+    try:
+        if bot_channel_id and upd.message.chat_id != int(bot_channel_id):
+            # Will have been logged as [ukn] in @logged
+            return False
+    except:
+        assert False, "Invalid `LINKCHAN_CHAT_ID`"
+    return True
+
+
 # Initialisation
 
 
@@ -358,6 +370,9 @@ def cb_start(upd, ctx):
     /start callback
     """
 
+    if not whitelist_chat(upd):
+        return
+
     # If user pressed "See examples", they were sent to bot PMs
     # to /start with the payload "examples".
     if ctx.args and ctx.args[0] == "examples":
@@ -411,6 +426,9 @@ def cb_help(upd, ctx):
     """
     /help callback
     """
+    if not whitelist_chat(upd):
+        return
+
     bot_username = ctx.bot.get_me().username.replace("_", "\\_")
 
     # Outgoing text
@@ -454,6 +472,9 @@ def cb_about(upd, ctx):
     """
     /about callback
     """
+    if not whitelist_chat(upd):
+        return
+
     bot_username = ctx.bot.get_me().username.replace("_", "\\_")
 
     # Outgoing text
@@ -511,17 +532,12 @@ def cb_link_handler(upd, ctx):
     Handles messages with links (see main > MessageHandler).
     Replies with `TEMPLATE` with new links.
     """
-    bot_channel_id = os.environ.get("LINKCHAN_CHAT_ID")
-    try:
-        if (not upd.messag) or (
-            # There is a channel ID set, and the message is not from the channel
-            bot_channel_id
-            and upd.message.chat_id != int(bot_channel_id)
-        ):
-            # Will have been logged as [ukn] in @logged
-            return
-    except:
-        assert False, "Invalid `LINKCHAN_CHAT_ID`"
+    if not upd.messag:
+        # Will have been logged as [ukn] in @logged
+        return
+
+    if not whitelist_chat(upd):
+        return
 
     links = []
 
@@ -560,6 +576,9 @@ def cb_inline_query(upd, ctx):
     """
     Handles inline queries. Sends back prompt menu of new links.
     """
+    if not whitelist_chat(upd):
+        return
+
     query = upd.inline_query.query
     newlinks = mk_newlinks(query)
 
