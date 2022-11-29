@@ -81,7 +81,9 @@ def whitelist_chat(upd) -> bool:
     bot_channel_id = os.environ.get("LINKCHAN_CHAT_ID")
     # There is a channel ID set, and the message is not from the channel
     try:
-        if bot_channel_id and upd.message.chat_id != int(bot_channel_id):
+        if bot_channel_id and upd.message.chat_id not in map(
+            int, bot_channel_id.replace(" ", "").split(",")
+        ):
             # Will have been logged as [ukn] in @logged
             return False
     except:
