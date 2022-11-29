@@ -35,5 +35,19 @@
 		"query_whitelist": [
 			"context"
 		]
+	},
+	"medium.com": {
+		"alt_domains": [
+			"medium.com"
+		],
+		"query_whitelist": []
+	},
+	"tiktok.com": {
+		"alt_domains": [
+			"www.tiktok.com",
+			"m.tiktok.com",
+			"vm.tiktok.com"
+		],
+		"query_whitelist": []
 	}
 }
