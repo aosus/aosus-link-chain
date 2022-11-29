@@ -22,6 +22,7 @@ from telegram.ext import (
 )
 from telegram.constants import MAX_INLINE_QUERY_RESULTS as MAX_RESULTS
 from telegram import error
+from dotenv import load_dotenv
 
 from urllib.parse import urlparse, urlencode, parse_qs
 import logging.handlers
@@ -111,6 +112,7 @@ def init(args):
 
     Has side effects.  See globals below.
     """
+    load_dotenv()
     # Filesystem
     cache_home = pathlib.Path(
         os.getenv("XDG_CACHE_HOME", os.getenv("HOME") + "/.cache")
