@@ -377,52 +377,21 @@ def cb_start(upd, ctx):
     if not whitelist_chat(upd):
         return
 
-    # If user pressed "See examples", they were sent to bot PMs
-    # to /start with the payload "examples".
-    if ctx.args and ctx.args[0] == "examples":
-        examples(upd, ctx)
-        return
-
     bot_username = ctx.bot.get_me().username.replace("_", "\\_")
 
     # outgoing text
     msg = f"""
-@{bot_username} cleans & proxies your share links.
-I support _Twitter_, _YouTube_, _Instagram_, _Reddit_, and _Medium_.
+@{bot_username} فقط ارسل رسالة يوجد بها احد الخدمات المدعومة و سوف يتم ارسال روابط الخدمات التي ارسلتها مستبدلة بخدمات أسس.
+الخدمات المدعومة _Twitter_, _YouTube_, _Instagram_, _Reddit_, and _Medium_.
 
-*Try inline*
-    Type:  `@{bot_username} <link>`
-    [See examples](t.me/{bot_username}?start=examples)
-
-*Try bot PMs*
-    [Send me](t.me/{bot_username}) a link
-
-*Try group chats*
-    [Add me](t.me/{bot_username}?startgroup=1) and share links
-
-See /help, /about or @linkchan\_updates
+انظر ايضآ الى /help, /about
 """
-
-    # Inline keyboard with "Try inline" button.
-    # See: https://core.telegram.org/bots/api#inlinekeyboardbutton
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "Try inline",
-                    # Launches inline mode on button press with no query
-                    switch_inline_query_current_chat="",
-                ),
-            ],
-        ]
-    )
 
     # Send message
     upd.message.reply_text(
         msg,
         disable_web_page_preview=True,
         parse_mode=ParseMode.MARKDOWN,
-        reply_markup=reply_markup,
         disable_notification=True,
     )
 
@@ -438,32 +407,21 @@ def cb_help(upd, ctx):
 
     # Outgoing text
     msg = f"""
-*DESCRIPTION*
-@{bot_username} substitutes the share links of popular services for lightweight and privacy respecting alternatives, and sanitises unnecesary queries and trackers.
+@{bot_username} يحل محل روابط المشاركة للخدمات الشعبية لبدائل خفيفة الوزن وتحترم الخصوصية ، ويصحح الاستفسارات غير الضرورية وأدوات التتبع.
 
-*USAGE*
-See /start
+*طريقة الاستخدام*
+انظر الى /start
 
-*SUPPORTED SERVICES*
-- twitter.com => Nitter
-- youtube.com => Inividious, CloudTube
-- instagram.com => Bibliogram
-- reddit.com => Teddit, Libreddit, Old Reddit
-- medium.com => Scribe
+*الخدمات المدعومة*
+- twitter.com => [Nitter](https://nitter.aosus.org)
+- youtube.com => [Piped](https://piped.aosus.org)
+- instagram.com => [Bibliogram](https://bibliogram.aosus.org)
+- reddit.com => [Libreddit](https://libreddit.aosus.org)
+- medium.com => [Scribe](https://scribe.aosus.org)
 
-*NOTES*
-For in-chat replies, default proxies are used.  For inline queries, a menu of proxies are available.  To cycle through proxy menus, append '#' to your link.
-
-All URL query parameters for all domains are removed, except for whitelisted queries per service.
-
-*PRIVACY*
-This bot only logs messages with links and inline queries.
-
-This bot receives no chat data when used in inline mode, only the user data of the user who is using inline mode.  Use inline mode for maximum privacy.
-
-*CONTRIBUTING*
-Have a suggestion or bug report?
-See /about or @linkchan\_updates.
+*للمساهمة*
+لديك نصيحة او تريد الابلاغ عن مشكلة؟
+انظر الى /about
 """
 
     # Send message
@@ -487,53 +445,21 @@ def cb_about(upd, ctx):
 
     # Outgoing text
     msg = f"""
-@{bot_username} (@linkchan\_updates)
+@{bot_username}
 
-Version
-    {VERSION}
-Source code
-    https://sr.ht/~torresjrjr/linkchanbot
-Maintainer
-    @torresjrjr <b@torresjrjr.com>
-License
-    GNU Affero General Public License
+الاصدار
+{VERSION}
+الشفرة المصدرية
+https://github.com/aosus/aosus-link-chain/tree/aosuslinkchainbot
+الكاتب الاساسي
+@torresjrjr <b@torresjrjr.com>
+الرخصة
+GNU Affero General Public License
 """
 
     # Send message
     upd.message.reply_text(
         msg, parse_mode=ParseMode.MARKDOWN, disable_notification=True
-    )
-
-
-def examples(upd, ctx):
-    """
-    Returns an inline keyboard of examples of inline queries.
-    Called when user sends /start with payload "examples".
-    See cb_start().
-    """
-
-    # Inline keyboard with a button for each example in `EXAMPLES`.
-    # See: https://core.telegram.org/bots/api#inlinekeyboardbutton
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    service,
-                    # Lauches inline mode on button press
-                    # with example as the query.
-                    switch_inline_query_current_chat=links[0],
-                )
-            ]
-            for service, links in EXAMPLES.items()
-        ]
-    )
-
-    # Send message
-    upd.message.reply_text(
-        "Try inline query examples",
-        parse_mode=ParseMode.MARKDOWN,
-        reply_markup=reply_markup,
-        disable_notification=True,
     )
 
 
@@ -582,68 +508,6 @@ def cb_link_handler(upd, ctx):
         upd.message.reply_text(
             msg, parse_mode=ParseMode.HTML, disable_notification=True
         )
-
-
-@logged
-def cb_inline_query(upd, ctx):
-    """
-    Handles inline queries. Sends back prompt menu of new links.
-    """
-    if not whitelist_chat(upd):
-        return
-
-    query = upd.inline_query.query
-    newlinks = mk_newlinks(query)
-
-    # If the query string is not a URL,
-    # return a menu of a random sample of alts.
-    if query == "" or not newlinks[0]:
-        nr_results = len(ALTS) if len(ALTS) <= MAX_RESULTS else MAX_RESULTS
-
-        results = [
-            InlineQueryResultArticle(
-                id=altsite,
-                title=altsite,
-                url=altsite,
-                description=alt.get("description", "Alt service"),
-                thumb_url=alt.get("thumb_url"),
-                input_message_content=InputTextMessageContent(altsite),
-            )
-            for altsite, alt in random.sample(sorted(ALTS.items()), nr_results)
-        ]
-    # Otherwise, return a menu of a random sample of newlinks
-    # and their alt metadata to populate the inline results menu.
-    else:
-        alts = {newlink: ALTS[urlparse(newlink).netloc] for newlink in newlinks}
-
-        nr_results = len(alts) if len(alts) <= MAX_RESULTS else MAX_RESULTS
-
-        results = [
-            InlineQueryResultArticle(
-                id=f"{upd.update_id}+{urlparse(newlink).netloc}",
-                title=urlparse(newlink).netloc,
-                url=newlink,
-                description=alt.get("description", "Alt service"),
-                thumb_url=alt.get("thumb_url"),
-                input_message_content=InputTextMessageContent(
-                    TEMPLATE.format(new=newlink, old=query),
-                    parse_mode=ParseMode.HTML,
-                ),
-            )
-            for newlink, alt in random.sample(sorted(alts.items()), nr_results)
-        ]
-
-    bot_username = ctx.bot.get_me().username
-
-    # Answer inline query
-    upd.inline_query.answer(
-        results,
-        # switch_pm_* adds a button the the inline results menu
-        # to open the bot chat.
-        # See: https://core.telegram.org/bots/api#answerinlinequery
-        switch_pm_text=f"Open @{bot_username}",
-        switch_pm_parameter="inline",
-    )
 
 
 @logged
@@ -709,7 +573,6 @@ def main():
     dp.add_handler(CommandHandler("help", cb_help))
     dp.add_handler(CommandHandler("about", cb_about))
 
-    dp.add_handler(InlineQueryHandler(cb_inline_query))
     dp.add_handler(ChosenInlineResultHandler(cb_chosen_inline_result))
 
     dp.add_handler(
