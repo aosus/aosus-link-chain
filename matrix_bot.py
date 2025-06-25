@@ -4,10 +4,18 @@ import json
 import functools
 import pathlib
 import re
+import logging # Added for improved logging
 from urllib.parse import urlparse, urlencode, parse_qs
 
 from dotenv import load_dotenv
 from nio import AsyncClient, LoginError, RoomMessageText, MatrixRoom, RoomMemberEvent
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Global ALTS and SERVICES dictionaries
 ALTS = {}
@@ -19,13 +27,7 @@ TEMPLATE = """
 <a href="{old}">source</a>
 """ # This is HTML, Matrix uses Markdown or HTML subset. Will need adjustment.
 
-# Utility functions from linkchanbot
-def stderr(*args, **kwargs):
-    """
-    Prints to stderr.
-    """
-    print(*args, **kwargs, file=sys.stderr)
-
+# Utility functions from linkchanbot (oneline is still used)
 @functools.cache
 def oneline(s: str) -> str:
     """
@@ -43,7 +45,7 @@ def mk_newlinks(link):
         [False]     A list with a single False element.
     """
     if not ALTS or not SERVICES:
-        print("Warning: ALTS or SERVICES not loaded. Link substitution will not work.")
+        logger.warning("ALTS or SERVICES not loaded. Link substitution will not work.")
         return [False]
 
     # Prepare and parse link string
@@ -113,30 +115,30 @@ def load_config_data():
     try:
         with open(alts_path, "r") as f:
             ALTS = json.load(f)
-        print(f"Successfully loaded ALTS from {alts_path}")
+        logger.info(f"Successfully loaded ALTS from {alts_path}")
     except FileNotFoundError:
-        print(f"Error: ALTS file not found at {alts_path}. Link substitution for some services might not work.")
+        logger.error(f"ALTS file not found at {alts_path}. Link substitution for some services might not work.")
         ALTS = {} # Ensure ALTS is an empty dict if file not found
     except json.decoder.JSONDecodeError as e:
-        print(f"Error: JSON syntax error in {alts_path}: {e}")
+        logger.error(f"JSON syntax error in {alts_path}: {e}")
         ALTS = {}
 
     try:
         with open(services_path, "r") as f:
             SERVICES = json.load(f)
-        print(f"Successfully loaded SERVICES from {services_path}")
+        logger.info(f"Successfully loaded SERVICES from {services_path}")
     except FileNotFoundError:
-        print(f"Error: SERVICES file not found at {services_path}. Link substitution will likely not work.")
+        logger.error(f"SERVICES file not found at {services_path}. Link substitution will likely not work.")
         SERVICES = {} # Ensure SERVICES is an empty dict if file not found
     except json.decoder.JSONDecodeError as e:
-        print(f"Error: JSON syntax error in {services_path}: {e}")
+        logger.error(f"JSON syntax error in {services_path}: {e}")
         SERVICES = {}
 
     # Validate ALTS (optional, but good practice)
     if ALTS:
         for altsite, alt in ALTS.items():
             if "service" not in alt:
-                print(f"Warning: alts.json: '{altsite}' has no 'service' value, it might be ignored or cause issues.")
+                logger.warning(f"alts.json: '{altsite}' has no 'service' value, it might be ignored or cause issues.")
 
 
 def find_links_in_text(text):
@@ -158,45 +160,49 @@ async def main():
 
     client = AsyncClient(homeserver, user_id, device_id=device_id)
 
-    print(f"Logging in as {user_id} on {homeserver}...")
+    logger.info(f"Attempting to login as {user_id} on {homeserver}...")
     try:
         login_response = await client.login(password, device_name=device_id)
         if isinstance(login_response, LoginError):
-            print(f"Failed to login: {login_response.message}")
+            logger.error(f"Failed to login: {login_response.message}")
             return
     except Exception as e:
-        print(f"Login exception: {e}")
+        logger.error(f"Login exception: {e}", exc_info=True)
         return
 
-    print("Login successful!")
+    logger.info("Login successful!")
 
     allowed_inviter_user_id = os.environ.get("ALLOWED_INVITER_USER_ID")
     if not allowed_inviter_user_id:
-        print("Warning: ALLOWED_INVITER_USER_ID not set. Bot will not accept any invites.")
+        logger.warning("ALLOWED_INVITER_USER_ID not set. Bot will not accept any invites.")
 
     @client.on(RoomMemberEvent)
     async def on_room_invite(room: MatrixRoom, event: RoomMemberEvent):
         if event.membership != "invite" or event.state_key != client.user_id:
             return # Not an invite for us
 
-        print(f"Received invite to room {room.room_id} ({room.display_name}) from {event.sender}")
+        logger.info(f"Received invite to room {room.room_id} ({room.display_name}) from {event.sender}")
 
         if allowed_inviter_user_id and event.sender == allowed_inviter_user_id:
-            print(f"Inviter {event.sender} is authorized. Joining room {room.room_id}")
-            await client.join(room.room_id)
-            print(f"Successfully joined room {room.room_id}")
+            logger.info(f"Inviter {event.sender} is authorized. Joining room {room.room_id}")
+            try:
+                await client.join(room.room_id)
+                logger.info(f"Successfully joined room {room.room_id}")
+            except Exception as e:
+                logger.error(f"Failed to join room {room.room_id}: {e}", exc_info=True)
         else:
-            print(f"Inviter {event.sender} is not authorized. Rejecting invite from room {room.room_id}")
-            await client.room_leave(room.room_id)
-            print(f"Successfully rejected (left) room {room.room_id}")
+            logger.info(f"Inviter {event.sender} is not authorized. Rejecting invite for room {room.room_id}")
+            try:
+                await client.room_leave(room.room_id)
+                logger.info(f"Successfully rejected (left) room {room.room_id}")
+            except Exception as e:
+                logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
 
 
     @client.on(RoomMessageText)
     async def message_callback(room: MatrixRoom, event: RoomMessageText):
-        print(
-            f"Message received in room {room.display_name} ({room.room_id})\n"
-            f"| Sender: {event.sender}\n"
-            f"| Body: {event.body}"
+        logger.debug(
+            f"Message received in room {room.room_id} ({room.display_name}) | Sender: {event.sender} | Body: {event.body}"
         )
 
         if event.sender == client.user_id: # Don't reply to our own messages
@@ -226,15 +232,18 @@ async def main():
                 message_type="m.room.message",
                 content={"msgtype": "m.text", "body": full_reply},
             )
+        # Add a general try-except around message processing if needed
+        # to catch errors and log them without crashing the sync loop.
+        # For now, errors within mk_newlinks or find_links_in_text are handled internally or are Python errors.
 
-    print("Syncing with server...")
-    await client.sync_forever(timeout=30000)  # Sync every 30 seconds
-
-    print("Closing client...")
-    await client.close()
+    logger.info("Syncing with server...")
+    try:
+        await client.sync_forever(timeout=30000, full_state=True)  # Sync every 30 seconds, get full initial state
+    except Exception as e:
+        logger.error(f"Error during sync_forever: {e}", exc_info=True)
+    finally:
+        logger.info("Closing client...")
+        await client.close()
 
 if __name__ == "__main__":
-    # Ensure sys is imported if stderr is used in the global scope,
-    # or pass it as an argument, or define stderr inside main/relevant functions.
-    import sys
     asyncio.run(main())

@@ -18,6 +18,17 @@ COPY sample.config/ ./sample.config/
 # For matrix_bot.py, the specific dependencies are matrix-nio and python-dotenv
 RUN pip install --no-cache-dir matrix-nio python-dotenv
 
+# Create a non-root user and group
+RUN groupadd -r appgroup && useradd --no-log-init -r -g appgroup appuser
+
+# Ensure the /app directory and its contents are owned by the new user
+# This is important if sample.config files need to be read by the default mechanism
+# or if the bot itself tries to write to /app (though it shouldn't by default)
+RUN chown -R appuser:appgroup /app
+
+# Switch to the non-root user
+USER appuser
+
 # Make port 80 available to the world outside this container (if needed, not for this bot)
 # EXPOSE 80
 
