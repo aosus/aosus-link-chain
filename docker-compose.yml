@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  matrix-link-replacer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: matrix-link-replacer
+    restart: unless-stopped
+    env_file:
+      - .env # Docker Compose will look for a .env file in the same directory
+             # and make its variables available to the container.
+    volumes:
+      # If you want to provide custom alts.json and services.json from the host,
+      # you can uncomment and adjust the following lines.
+      # Ensure MATRIX_BOT_ALTS_JSON_PATH and MATRIX_BOT_SERVICES_JSON_PATH in your .env
+      # file point to /app/config/alts.json and /app/config/services.json respectively.
+      # - ./my_custom_config/alts.json:/app/config/alts.json:ro
+      # - ./my_custom_config/services.json:/app/config/services.json:ro
+      #
+      # Alternatively, if you keep your custom configs named alts.json and services.json
+      # in a directory, say, `user_matrix_config` on the host:
+      # - ./user_matrix_config/alts.json:/app/sample.config/alts.json:ro
+      # - ./user_matrix_config/services.json:/app/sample.config/services.json:ro
+      # This would overwrite the sample.config files copied by the Dockerfile.
+      #
+      # Or, if you use MATRIX_BOT_ALTS_JSON_PATH=/app/user_config/alts.json in .env:
+      # - ./user_matrix_config:/app/user_config:ro
+      pass # No volumes needed if using default sample.config from the image
+           # and not overriding with host files, or if paths in .env point elsewhere
+           # that's managed outside this compose for persistent data.
+           # For simplicity with current setup using env vars for paths,
+           # users can place their config files anywhere the Docker container can access
+           # if they change the default paths via env vars.
+           # If they want to mount them directly via compose, the example above shows how.
+
+networks:
+  default:
+    name: link-bots-network # Optional: define a common network if other services are added
