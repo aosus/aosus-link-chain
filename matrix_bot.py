@@ -176,8 +176,8 @@ async def main():
     if not allowed_inviter_user_id:
         logger.warning("ALLOWED_INVITER_USER_ID not set. Bot will not accept any invites.")
 
-    @client.on(RoomMemberEvent)
-    async def on_room_invite(room: MatrixRoom, event: RoomMemberEvent):
+    # Define callbacks first
+    async def on_room_invite_callback(room: MatrixRoom, event: RoomMemberEvent):
         if event.membership != "invite" or event.state_key != client.user_id:
             return # Not an invite for us
 
@@ -198,20 +198,13 @@ async def main():
             except Exception as e:
                 logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
 
-
-    @client.on(RoomMessageText)
-    async def message_callback(room: MatrixRoom, event: RoomMessageText):
+    async def message_handler_callback(room: MatrixRoom, event: RoomMessageText):
         logger.debug(
             f"Message received in room {room.room_id} ({room.display_name}) | Sender: {event.sender} | Body: {event.body}"
         )
 
         if event.sender == client.user_id: # Don't reply to our own messages
             return
-
-        # Only process messages in rooms the bot is a member of
-        # (implicitly handled by nio, as callbacks are per-room the bot is in)
-        # And ensure the room is one we joined via an allowed inviter if strictness is needed,
-        # though current logic just processes any message in a joined room.
 
         found_links = find_links_in_text(event.body)
         if not found_links:
@@ -227,18 +220,34 @@ async def main():
 
         if replies:
             full_reply = "\n".join(replies)
-            await client.room_send(
-                room_id=room.room_id,
-                message_type="m.room.message",
-                content={"msgtype": "m.text", "body": full_reply},
-            )
-        # Add a general try-except around message processing if needed
-        # to catch errors and log them without crashing the sync loop.
-        # For now, errors within mk_newlinks or find_links_in_text are handled internally or are Python errors.
+            try:
+                await client.room_send(
+                    room_id=room.room_id,
+                    message_type="m.room.message",
+                    content={"msgtype": "m.text", "body": full_reply},
+                )
+            except Exception as e:
+                logger.error(f"Failed to send message to room {room.room_id}: {e}", exc_info=True)
 
-    logger.info("Syncing with server...")
+    # Perform an initial sync to ensure client is ready
+    logger.info("Performing initial sync with server...")
     try:
-        await client.sync_forever(timeout=30000, full_state=True)  # Sync every 30 seconds, get full initial state
+        await client.sync(timeout=30000, full_state=True)
+        logger.info("Initial sync complete.")
+    except Exception as e:
+        logger.error(f"Error during initial sync: {e}", exc_info=True)
+        await client.close()
+        return
+
+    # Register callbacks after initial sync
+    logger.info("Registering event callbacks...")
+    client.add_event_callback(on_room_invite_callback, RoomMemberEvent)
+    client.add_event_callback(message_handler_callback, RoomMessageText)
+    logger.info("Event callbacks registered.")
+
+    logger.info("Starting continuous sync with server...")
+    try:
+        await client.sync_forever(timeout=30000, full_state=False)  # full_state=False for subsequent syncs
     except Exception as e:
         logger.error(f"Error during sync_forever: {e}", exc_info=True)
     finally:
