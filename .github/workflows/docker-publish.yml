@@ -12,7 +12,6 @@ on:
 jobs:
   build-and-push-image:
     # Only run this job on pushes to the main branch
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Adjust 'main' if your default branch is different
     runs-on: ubuntu-latest
     permissions:
       contents: read
