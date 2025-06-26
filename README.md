@@ -1,5 +1,7 @@
 # A matrix bot that automatically replies with a link to alternative frontends
 
+**Fully vibe coded**
+
 A Matrix bot that sanitises and substitutes share links in Matrix rooms with lightweight, privacy-respecting proxy frontend alternatives.
 
 When in a room, the bot will listen for messages containing links. If a supported link (e.g., Twitter, YouTube) is detected, it will post a reply with a link to an alternative frontend (e.g., Nitter, Invidious).
