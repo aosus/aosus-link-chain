@@ -8,9 +8,11 @@ Supported services are configurable via `services.json`, and the alternative fro
 
 ## Features
 
-- Replaces links (e.g., Twitter, YouTube, Instagram, Reddit) with privacy-focused alternatives (e.g., Nitter, Invidious).
-- Configurable list of supported services and alternative frontends.
-- Secure: Only joins rooms when invited by a pre-configured authorized Matrix User ID.
+- Replaces links (e.g., Twitter/X, YouTube, Instagram, Reddit) with privacy-focused alternatives (e.g., Nitter, Invidious). URL detection is case-insensitive.
+- Recognizes `x.com` as an alias for `twitter.com`. (It's recommended to also add `x.com` to the `alt_domains` list for `twitter.com` in your `services.json` for full clarity, though the bot attempts to handle this).
+- Configurable list of supported services and alternative frontends via `services.json` and `alts.json`.
+- **Session Persistence**: Remembers its Matrix session (access token, device ID) across restarts, avoiding the need for password login every time, by storing data in a specified directory.
+- Operates only in rooms it is already a member of (manual addition to rooms required).
 - Dockerized for easy deployment.
 
 ## Prerequisites
@@ -27,9 +29,9 @@ The Matrix bot is configured using environment variables. Create a `.env` file i
 # .env file for Matrix Bot
 HOMESERVER="https://matrix-client.matrix.org"  # Your bot's homeserver URL
 USER_ID="@yourbotusername:matrix.org"        # Full Matrix User ID of the bot
-PASSWORD="yourbotpassword"                   # Bot's account password
-# DEVICE_ID="linkmatrixbot"                  # Optional: A friendly name for the bot's device/session
-ALLOWED_INVITER_USER_ID="@adminuser:matrix.org" # Full Matrix User ID of the person allowed to invite the bot
+# PASSWORD="yourbotpassword"                 # Bot's account password. Required for first login or if session store is invalid. Can be removed after first successful login if session is persisted.
+# DEVICE_ID="linkmatrixbot"                  # Optional: A friendly name for the bot's device/session, used on first login.
+MATRIX_BOT_STORE_PATH="/app/store"           # Path inside the container for storing session data. E.g., /app/store (for Docker) or ./matrix_bot_data/store (for local)
 
 # Optional: Custom paths for alts and services JSON files
 # If not set, defaults to sample.config/alts.json and sample.config/services.json relative to the script
@@ -39,93 +41,81 @@ ALLOWED_INVITER_USER_ID="@adminuser:matrix.org" # Full Matrix User ID of the per
 
 - `HOMESERVER`: The URL of the Matrix homeserver your bot is registered on.
 - `USER_ID`: The bot's full Matrix ID (e.g., `@botname:yourserver.org`).
-- `PASSWORD`: The password for the bot's Matrix account.
-- `DEVICE_ID` (Optional): A descriptive name for the bot's session.
-- `ALLOWED_INVITER_USER_ID`: Crucial for security. This is the full Matrix ID of the user who has permission to invite the bot into rooms. The bot will ignore invites from anyone else.
-- `MATRIX_BOT_ALTS_JSON_PATH` (Optional): Specifies a custom path to the `alts.json` file. If not set, the bot defaults to looking for `sample.config/alts.json` relative to the `matrix_bot.py` script (or `/app/sample.config/alts.json` inside Docker).
-- `MATRIX_BOT_SERVICES_JSON_PATH` (Optional): Specifies a custom path to the `services.json` file. If not set, the bot defaults to looking for `sample.config/services.json` relative to the `matrix_bot.py` script (or `/app/sample.config/services.json` inside Docker).
+- `PASSWORD` (Optional after first login): The password for the bot's Matrix account. Needed for the very first login, or if the session data in `MATRIX_BOT_STORE_PATH` becomes invalid. Can be removed from the `.env` file once the bot has successfully logged in and created a session store.
+- `DEVICE_ID` (Optional): A descriptive name for the bot's device/session, primarily used during the initial login if no session store exists.
+- `MATRIX_BOT_STORE_PATH`: **Required for session persistence.** Path to a directory where the bot will store its session data (access token, device ID, sync token). This allows the bot to resume its session on restart without needing the password.
+    - When using Docker, this path should correspond to the container-side path of a mounted volume (e.g., `/app/store` which is mapped from `./matrix_bot_data/store` on the host in `docker-compose.yml`).
+    - When running directly with Python, choose a writable path (e.g., `./matrix_bot_data/store`).
+- `MATRIX_BOT_ALTS_JSON_PATH` (Optional): Specifies a custom path to the `alts.json` file.
+- `MATRIX_BOT_SERVICES_JSON_PATH` (Optional): Specifies a custom path to the `services.json` file.
+- `LOG_LEVEL` (Optional): Sets the logging level for the bot.
 
-The `alts.json` and `services.json` files define the link substitution rules. By default, the bot expects these to be in the `sample.config/` directory. You can customize their location using the environment variables above. Sample files are provided in `sample.config/`.
+The `alts.json` and `services.json` files define the link substitution rules. By default, the bot expects these to be in the `sample.config/` directory.
 
 ## Running the Bot
 
-There are two main ways to run the bot:
+The bot needs to be manually invited or added to the Matrix rooms where it should operate. It will not automatically accept invitations.
 
 ### 1. Directly with Python (for development or simple deployments)
 
 #### Installation
 
-1.  Clone the repository:
-    ```bash
-    git clone <repository_url> # Replace <repository_url> with the actual URL
-    cd matrix-link-replacer-bot # Or your chosen directory name
-    ```
-2.  Install Python dependencies:
-    ```bash
-    pip install matrix-nio python-dotenv
-    ```
-3.  Ensure your `.env` file is configured as described above.
-4.  Make sure `sample.config/alts.json` and `sample.config/services.json` exist (or your custom paths are configured).
+1.  Clone the repository.
+2.  Install Python dependencies: `pip install matrix-nio python-dotenv`.
+3.  Create and configure your `.env` file, ensuring `MATRIX_BOT_STORE_PATH` points to a writable directory (e.g., `./matrix_bot_data/store`).
+4.  Ensure `sample.config/alts.json` and `sample.config/services.json` exist (or your custom paths are configured).
 
 #### Usage
 
-1.  Run the bot:
-    ```bash
-    python matrix_bot.py
-    ```
-2.  Invite the bot: From the Matrix account specified as `ALLOWED_INVITER_USER_ID`, invite the bot (e.g., `@yourbotusername:matrix.org`) to a room. The bot should automatically join.
-3.  Test: Send a message containing a supported link (e.g., a Twitter or YouTube link) in the room. The bot should reply with the substituted version.
-
-The Matrix bot will print logging information to the console.
+1.  Run the bot: `python matrix_bot.py`.
+    *   On the first run, ensure `PASSWORD` is set in `.env` for initial login. The bot will create session files in `MATRIX_BOT_STORE_PATH`.
+    *   On subsequent runs, the bot will attempt to use the stored session.
+2.  Manually add/invite the bot to the desired Matrix rooms.
+3.  Test: Send a message containing a supported link.
 
 ### 2. Using Docker (Recommended for most deployments)
 
-The Matrix bot can be run as a Docker container using Docker Compose.
-
 #### Prerequisites (Docker)
 
-- Docker installed ([Install Docker](https://docs.docker.com/get-docker/))
-- Docker Compose installed (usually comes with Docker Desktop, or can be installed separately [Install Docker Compose](https://docs.docker.com/compose/install/))
+- Docker and Docker Compose installed.
 
 #### Building and Running with Docker Compose
 
 1.  **Ensure Configuration is Ready**:
-    *   Make sure you have a `.env` file in the root of the project, correctly filled out as described in the "Configuration" section. Docker Compose will use this file to provide environment variables to the container.
-    *   The default `Dockerfile` copies the `sample.config/` directory into the image. If you want to use custom `alts.json` or `services.json` files from your host machine:
-        *   **Option 1 (Recommended for custom files):** Place your `alts.json` and `services.json` in a directory on your host machine (e.g., `./my_matrix_config/`). Then, in your `.env` file, set the paths to point within the container, for example:
-            ```env
-            MATRIX_BOT_ALTS_JSON_PATH=/app/user_config/alts.json
-            MATRIX_BOT_SERVICES_JSON_PATH=/app/user_config/services.json
-            ```
-            And uncomment/adjust the volume mounts in `docker-compose.yml` to map your host directory to `/app/user_config` in the container:
-            ```yaml
-            # In docker-compose.yml:
-            # services:
-            #   matrix-link-replacer:
-            #     volumes:
-            #       - ./my_matrix_config:/app/user_config:ro
-            ```
-            (Note: The `docker-compose.yml` provided has a placeholder for volumes, you might need to uncomment and adjust it.)
-        *   **Option 2 (Using default sample.config from image):** If you're using the `sample.config` files included in the repository (and thus in the Docker image), ensure `MATRIX_BOT_ALTS_JSON_PATH` and `MATRIX_BOT_SERVICES_JSON_PATH` are unset in your `.env` file so the bot uses the defaults within the container (i.e., `/app/sample.config/alts.json` and `/app/sample.config/services.json`).
+    *   Create and configure your `.env` file.
+        *   Set `MATRIX_BOT_STORE_PATH` to `/app/store` (this path is used in the `docker-compose.yml` volume mount).
+        *   Provide `PASSWORD` in `.env` for the first time the container runs to establish a session. After the first successful run and session data is created in `./matrix_bot_data/store` (on the host), you can optionally remove/comment out `PASSWORD` from `.env`.
+    *   **Custom `alts.json`/`services.json` (Optional)**: If using custom config files, see options in the `README.md` section on Docker for mounting them. The default is to use the `sample.config/` from the image.
 
-2.  **Build and Run the Container**:
-    Open a terminal in the root of the project directory (where `docker-compose.yml` is located) and run:
+2.  **Prepare Store Directory (Host)**:
+    Before the first run with Docker Compose, it's good practice to create the host directory that will be mounted for the store, though Docker might create it for you with root ownership initially.
+    ```bash
+    mkdir -p ./matrix_bot_data/store
+    ```
+    Ensure this directory has appropriate permissions if needed, though `matrix-nio` inside the container (running as `appuser`) will write to `/app/store`.
+
+3.  **Build and Run the Container**:
     ```bash
     docker-compose up --build -d
     ```
-    - `--build`: Forces Docker Compose to build the image (e.g., if you've changed `Dockerfile` or files it copies).
-    - `-d`: Runs the container in detached mode (in the background).
 
-3.  **Viewing Logs**:
-    To view the logs of the running container:
+4.  **Manually Add Bot to Rooms**: After the bot is running, manually invite/add it to the desired Matrix rooms using a Matrix client.
+
+5.  **Viewing Logs**:
     ```bash
     docker-compose logs -f matrix-link-replacer
     ```
 
-4.  **Stopping the Container**:
-    To stop the container:
+6.  **Stopping the Container**:
     ```bash
     docker-compose down
+    ```
+    The session data will persist in `./matrix_bot_data/store` on your host.
+
+#### Notes on Docker Configuration
+
+- **Session Persistence**: The `docker-compose.yml` mounts `./matrix_bot_data/store` from your host to `/app/store` inside the container. This is crucial for session persistence.
+- **Environment Variables**: Docker Compose uses the `.env` file. For other deployment methods, provide environment variables directly.
     ```
 
 #### Notes on Docker Configuration
