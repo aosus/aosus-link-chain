@@ -149,6 +149,14 @@ def load_config_data():
             if "service" not in alt:
                 logger.warning(f"alts.json: '{altsite}' has no 'service' value, it might be ignored or cause issues.")
 
+    # Dynamically add x.com as an alias for twitter.com if twitter.com service exists
+    if "twitter.com" in SERVICES:
+        if "alt_domains" not in SERVICES["twitter.com"]:
+            SERVICES["twitter.com"]["alt_domains"] = []
+        if "x.com" not in SERVICES["twitter.com"]["alt_domains"]:
+            SERVICES["twitter.com"]["alt_domains"].append("x.com")
+            logger.info("Dynamically added 'x.com' as an alt_domain for 'twitter.com' service.")
+
 
 def find_links_in_text(text):
     """Finds URLs in a given text string.
@@ -166,7 +174,8 @@ def find_links_in_text(text):
         r'(?:[a-zA-Z0-9\-]+\.)+(?:[a-zA-Z]{2,})'  # domain.tld
         r'(?::[0-9]+)?'  # Optional port
         r'(?:/[^\s]*)?'  # Optional path
-        r'(?=\b|[\s"\'<>]|$)' # Ensure it's a boundary or end of string to avoid matching parts of words
+        r'(?=\b|[\s"\'<>]|$)', # Ensure it's a boundary or end of string to avoid matching parts of words
+        re.IGNORECASE  # Make matching case-insensitive
     )
     # Previous simpler regex for http(s) only:
     # url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')

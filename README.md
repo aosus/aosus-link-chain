@@ -8,8 +8,9 @@ Supported services are configurable via `services.json`, and the alternative fro
 
 ## Features
 
-- Replaces links (e.g., Twitter, YouTube, Instagram, Reddit) with privacy-focused alternatives (e.g., Nitter, Invidious).
-- Configurable list of supported services and alternative frontends.
+- Replaces links (e.g., Twitter/X, YouTube, Instagram, Reddit) with privacy-focused alternatives (e.g., Nitter, Invidious). URL detection is case-insensitive.
+- Recognizes `x.com` as an alias for `twitter.com`. (It's recommended to also add `x.com` to the `alt_domains` list for `twitter.com` in your `services.json` for full clarity, though the bot attempts to handle this).
+- Configurable list of supported services and alternative frontends via `services.json` and `alts.json`.
 - Secure: Only joins rooms when invited by a pre-configured authorized Matrix User ID.
 - Dockerized for easy deployment.
 
