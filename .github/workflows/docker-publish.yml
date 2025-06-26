@@ -44,7 +44,7 @@ jobs:
           context: .
           tags: ghcr.io/aosus/link-chain:latest
           platforms: linux/amd64, linux/arm64/v8
-          push: ${{ github.event_name != 'pull_request' }
+          push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
