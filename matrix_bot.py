@@ -229,8 +229,7 @@ async def main():
     # Initialize bot_startup_time here. It will be set properly before sync_forever.
     bot_startup_time = 0
 
-    # Define callbacks using decorators, now that 'client' is initialized.
-    @client.on(RoomMemberEvent)
+    # Define callbacks as regular async functions
     async def on_room_invite_callback(room: MatrixRoom, event: RoomMemberEvent):
         logger.debug("on_room_invite_callback: Entered function.")
         if event.membership != "invite" or event.state_key != client.user_id:
@@ -257,7 +256,6 @@ async def main():
             except Exception as e:
                 logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
 
-    @client.on(RoomMessageText)
     async def message_handler_callback(room: MatrixRoom, event: RoomMessageText):
         # This callback reads bot_startup_time from the enclosing main() scope
         logger.debug(
@@ -305,11 +303,17 @@ async def main():
         else:
             logger.debug(f"No replies generated for message from {event.sender} in room {room.room_id}.")
 
+    # Register callbacks explicitly after client login and before starting sync loop
+    logger.info("Registering event callbacks...")
+    client.add_event_callback(on_room_invite_callback, RoomMemberEvent)
+    client.add_event_callback(message_handler_callback, RoomMessageText)
+    logger.info("Event callbacks registered.")
+
     # Set the actual startup timestamp *before* starting the sync loop that uses it.
     bot_startup_time = int(time.time() * 1000)
     logger.info(f"Bot startup timestamp set to: {bot_startup_time}")
-    logger.info("Callbacks are defined using decorators. Starting sync_forever...")
 
+    logger.info("Starting sync_forever with server (full_state=True for initial sync)...")
     try:
         # full_state=True on the first run of sync_forever will get initial room states.
         # nio handles the transition from initial sync to subsequent incremental syncs.
