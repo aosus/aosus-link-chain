@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master # Or your default branch, e.g., master
+      - feat/matrix-bot-configurable-paths
   pull_request:
     branches:
       - master # Or your default branch
