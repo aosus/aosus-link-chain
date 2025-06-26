@@ -1,15 +1,15 @@
-version: '3.8'
-
 services:
   matrix-link-replacer:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/aosus/link-chain:latest
     container_name: matrix-link-replacer
     restart: unless-stopped
-    env_file:
-      - .env # Docker Compose will look for a .env file in the same directory
-             # and make its variables available to the container.
+    environment:
+      HOMESERVER: https://matrix.aosus.org # Or your homeserver
+      USER_ID: "@linkbot:aosus.org" # The bot's Matrix User ID
+      PASSWORD: xxxxxxxxxx # The bot's password
+      DEVICE_ID: linkmatrixbot # Optional, will be used for the session
+      ALLOWED_INVITER_USER_ID: '@admin:aosus.org' # IMPORTANT: The Matrix User ID of the user who is allowed to invite this bot to rooms
+      LOG_LEVEL: DEBUG
     volumes:
       # Mount a directory from the host to persist the Matrix client store.
       # This allows the bot to remember its session (access token, device ID, sync token)
@@ -23,7 +23,3 @@ services:
       # MATRIX_BOT_SERVICES_JSON_PATH=/app/user_config/services.json
       # Then you would mount your local config directory like this:
       # - ./my_custom_config:/app/user_config:ro
-
-networks:
-  default:
-    name: link-bots-network # Optional: define a common network if other services are added
