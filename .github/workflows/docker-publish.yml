@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          tags: ghcr.io/aosus/link-chain:latest
+          tags: ghcr.io/aosus/matrix-privacy-link-bot:latest
           platforms: linux/amd64, linux/arm64/v8
           push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.meta.outputs.labels }}
