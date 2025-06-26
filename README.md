@@ -1,8 +1,8 @@
-# Matrix Link Replacer Bot
+# A matrix bot that automatically replies with a link to alternative frontends
 
 A Matrix bot that sanitises and substitutes share links in Matrix rooms with lightweight, privacy-respecting proxy frontend alternatives.
 
-When invited to a room by an authorized user, the bot will listen for messages containing links. If a supported link (e.g., Twitter, YouTube) is detected, it will post a reply with a link to an alternative frontend (e.g., Nitter, Invidious).
+When in a room, the bot will listen for messages containing links. If a supported link (e.g., Twitter, YouTube) is detected, it will post a reply with a link to an alternative frontend (e.g., Nitter, Invidious).
 
 Supported services are configurable via `services.json`, and the alternative frontends are defined in `alts.json`.
 
@@ -79,73 +79,6 @@ The bot needs to be manually invited or added to the Matrix rooms where it shoul
 
 - Docker and Docker Compose installed.
 
-#### Building and Running with Docker Compose
+#### Running with Docker Compose
 
-1.  **Ensure Configuration is Ready**:
-    *   Create and configure your `.env` file.
-        *   Set `MATRIX_BOT_STORE_PATH` to `/app/store` (this path is used in the `docker-compose.yml` volume mount).
-        *   Provide `PASSWORD` in `.env` for the first time the container runs to establish a session. After the first successful run and session data is created in `./matrix_bot_data/store` (on the host), you can optionally remove/comment out `PASSWORD` from `.env`.
-    *   **Custom `alts.json`/`services.json` (Optional)**: If using custom config files, see options in the `README.md` section on Docker for mounting them. The default is to use the `sample.config/` from the image.
-
-2.  **Prepare Store Directory (Host)**:
-    Before the first run with Docker Compose, it's good practice to create the host directory that will be mounted for the store, though Docker might create it for you with root ownership initially.
-    ```bash
-    mkdir -p ./matrix_bot_data/store
-    ```
-    Ensure this directory has appropriate permissions if needed, though `matrix-nio` inside the container (running as `appuser`) will write to `/app/store`.
-
-3.  **Build and Run the Container**:
-    ```bash
-    docker-compose up --build -d
-    ```
-
-4.  **Manually Add Bot to Rooms**: After the bot is running, manually invite/add it to the desired Matrix rooms using a Matrix client.
-
-5.  **Viewing Logs**:
-    ```bash
-    docker-compose logs -f matrix-link-replacer
-    ```
-
-6.  **Stopping the Container**:
-    ```bash
-    docker-compose down
-    ```
-    The session data will persist in `./matrix_bot_data/store` on your host.
-
-#### Notes on Docker Configuration
-
-- **Session Persistence**: The `docker-compose.yml` mounts `./matrix_bot_data/store` from your host to `/app/store` inside the container. This is crucial for session persistence.
-- **Environment Variables**: Docker Compose uses the `.env` file. For other deployment methods, provide environment variables directly.
-    ```
-
-#### Notes on Docker Configuration
-
-- **Environment Variables**: The `docker-compose.yml` uses `env_file: .env` to load variables from a `.env` file located in the project root. This is a convenience for local development with Docker Compose. The Python script itself (`matrix_bot.py`) reads standard environment variables. Therefore, when deploying outside of Docker Compose (e.g., with `docker run` or in orchestrated environments like Kubernetes), you should provide environment variables directly to the container. These externally provided variables will be used by the application. If a `.env` file is not present inside the container's working directory or if variables are already set in the environment, `python-dotenv` (used in the script) will not override them.
-- The bot inside the Docker container will behave the same way as running it directly, respecting the `ALLOWED_INVITER_USER_ID` and other configurations provided via environment variables.
-
-## Automated Docker Image Publishing
-
-This project uses GitHub Actions to automatically build and publish the Docker image to the GitHub Container Registry (GHCR).
-
-- **On every push to the `main` branch**: The Docker image is built and pushed to `ghcr.io/<OWNER>/<REPOSITORY_NAME>:latest` and `ghcr.io/<OWNER>/<REPOSITORY_NAME>:sha-<commit_sha>`. Replace `<OWNER>` and `<REPOSITORY_NAME>` with your GitHub username/organization and repository name respectively (these are typically automatically lowercased by GHCR).
-- **On every pull request to the `main` branch**: The Docker image is built as a test to ensure the Dockerfile is valid and the application can be packaged, but it is not pushed.
-
-You can find the workflow definition in `.github/workflows/docker-publish.yml`.
-
-### Workflow Status
-
-[![Docker Build and Publish](https://github.com/OWNER/REPOSITORY_NAME/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/OWNER/REPOSITORY_NAME/actions/workflows/docker-publish.yml)
-
-*(Please replace `OWNER/REPOSITORY_NAME` in the badge URL above with your actual GitHub repository owner and name after the initial commit for the badge to work correctly.)*
-
-### Using the Published Image
-
-Once published, you can pull the image using:
-```bash
-docker pull ghcr.io/<owner>/<repository_name>:latest
-```
-And use it in your Docker Compose file by referencing this image name instead of using the `build:` context, or in other Docker environments. Remember to replace `<owner>` and `<repository_name>` with the actual values (usually lowercase).
-
-## License
-
-This project is based on the original linkchanbot and is likely under the GNU Affero General Public License. Please check the `LICENSE` file for details. (Note: Original `LICENSE` file might need review if project has significantly diverged or if new components have different licenses).
+Use the template docker-compose file, make sure to set the required variables
