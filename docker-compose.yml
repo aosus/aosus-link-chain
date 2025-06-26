@@ -1,6 +1,6 @@
 services:
   matrix-link-replacer:
-    image: ghcr.io/aosus/link-chain:latest
+    image: ghcr.io/aosus/matrix-privacy-link-bot:latest
     container_name: matrix-link-replacer
     restart: unless-stopped
     environment:
