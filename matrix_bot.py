@@ -63,44 +63,55 @@ def mk_newlinks(link):
 
     # Enforce HTTPS
     url = url._replace(scheme="https")
+    parsed_netloc_lower = url.netloc.lower() # Normalize netloc to lowercase for matching
 
     # Recognise service
-    service = None
-    if url.netloc in SERVICES:
-        service = url.netloc
+    service_key_matched = None # This will store the canonical key from SERVICES dict
+    if parsed_netloc_lower in SERVICES:
+        service_key_matched = parsed_netloc_lower # Direct match with a primary service domain (already lowercase)
     else:
+        # Iterate through services and their alt_domains (also lowercased for comparison)
         for main_domain, service_data in SERVICES.items():
-            if url.netloc in service_data.get("alt_domains", []):
-                service = main_domain
+            # Ensure alt_domains are treated as lowercase for matching
+            alt_domains_lower = [ad.lower() for ad in service_data.get("alt_domains", [])]
+            if parsed_netloc_lower in alt_domains_lower:
+                service_key_matched = main_domain # Matched an alt_domain, use its main_domain key
                 break
 
-    if not service:
-        logger.debug(f"mk_newlinks: Service not recognized for domain '{url.netloc}' from link '{original_link}'.")
+    if not service_key_matched:
+        logger.debug(f"mk_newlinks: Service not recognized for domain '{url.netloc}' (normalized: '{parsed_netloc_lower}') from link '{original_link}'.")
         return [False]
-    logger.debug(f"mk_newlinks: Recognized service '{service}' for link '{original_link}'.")
 
-    # Keep only allowed URL queries
-    allowed_queries = SERVICES[service].get("query_whitelist", []) # Ensure it defaults to empty list
+    logger.debug(f"mk_newlinks: Recognized link '{original_link}' as service '{service_key_matched}' (matched on '{parsed_netloc_lower}').")
+
+    # Keep only allowed URL queries (path, query, fragment should retain original casing from url object)
+    allowed_queries = SERVICES[service_key_matched].get("query_whitelist", [])
     old_queries = parse_qs(url.query, keep_blank_values=True)
     new_queries = {
         query: v for (query, v) in old_queries.items() if query in allowed_queries
     }
-    url = url._replace(query=urlencode(new_queries, doseq=True))
+    # Create a new URL object for modification that only has scheme, queries, path, etc. from original,
+    # but netloc will be replaced by alt domains.
+    # The original url object still has original casing for path/query.
+    url_to_substitute = url._replace(query=urlencode(new_queries, doseq=True))
 
-    # Find alts for replacing `service`
+
+    # Find alts for replacing `service_key_matched`
     applicable_alts = {
-        altsite: alt for (altsite, alt) in ALTS.items() if alt.get("service") == service
+        altsite: alt_data for (altsite, alt_data) in ALTS.items() if alt_data.get("service", "").lower() == service_key_matched
     }
-    logger.debug(f"mk_newlinks: Found applicable_alts: {list(applicable_alts.keys())} for service '{service}'.")
+    logger.debug(f"mk_newlinks: Found applicable_alts: {list(applicable_alts.keys())} for service '{service_key_matched}'.")
 
     if not applicable_alts:
-        logger.debug(f"mk_newlinks: No applicable alts found for service '{service}' from link '{original_link}'.")
+        logger.debug(f"mk_newlinks: No applicable alts found for service '{service_key_matched}' from link '{original_link}'.")
         return [False]
 
     # Make new substitutes
+    # When substituting, we use the altsite (which should be a domain) as the new netloc.
+    # The path, query (now sanitized), and fragment are taken from url_to_substitute.
     newlinks = list(
         map(
-            lambda newdomain: url._replace(netloc=newdomain).geturl(),
+            lambda new_alt_domain: url_to_substitute._replace(netloc=new_alt_domain).geturl(),
             applicable_alts.keys(),
         )
     )
