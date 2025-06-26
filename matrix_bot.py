@@ -12,11 +12,17 @@ from dotenv import load_dotenv
 from nio import AsyncClient, LoginError, RoomMessageText, MatrixRoom, RoomMemberEvent
 
 # Configure logging
+# Log level will be set based on environment variable LOG_LEVEL
+log_level_str = os.environ.get("LOG_LEVEL", "INFO").upper()
+log_level = getattr(logging, log_level_str, logging.INFO) # Fallback to INFO if invalid
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=log_level,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+logger.info(f"Logging level set to: {logging.getLevelName(logger.getEffectiveLevel())}")
+
 
 # Global ALTS and SERVICES dictionaries
 ALTS = {}
@@ -220,11 +226,11 @@ async def main():
     if not allowed_inviter_user_id:
         logger.warning("ALLOWED_INVITER_USER_ID not set. Bot will not accept any invites.")
 
-    # Initialize bot_startup_time here, before callbacks that might use it are defined.
-    # Though it's set again later, this makes its scope clear.
+    # Initialize bot_startup_time here. It will be set properly before sync_forever.
     bot_startup_time = 0
 
-    # Define callbacks first
+    # Define callbacks using decorators, now that 'client' is initialized.
+    @client.on(RoomMemberEvent)
     async def on_room_invite_callback(room: MatrixRoom, event: RoomMemberEvent):
         logger.debug("on_room_invite_callback: Entered function.")
         if event.membership != "invite" or event.state_key != client.user_id:
@@ -251,13 +257,14 @@ async def main():
             except Exception as e:
                 logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
 
+    @client.on(RoomMessageText)
     async def message_handler_callback(room: MatrixRoom, event: RoomMessageText):
         # This callback reads bot_startup_time from the enclosing main() scope
         logger.debug(
             f"Message received in room {room.room_id} ({room.display_name}) | Sender: {event.sender} | Body: {event.body}"
         )
 
-        if event.server_timestamp <= bot_startup_time:
+        if event.server_timestamp <= bot_startup_time: # Uses bot_startup_time from main's scope
             logger.debug(f"Ignoring old message from {event.sender} with timestamp {event.server_timestamp} (startup: {bot_startup_time})")
             return
 
@@ -298,16 +305,11 @@ async def main():
         else:
             logger.debug(f"No replies generated for message from {event.sender} in room {room.room_id}.")
 
-    # Set the actual startup timestamp before registering callbacks that use it
+    # Set the actual startup timestamp *before* starting the sync loop that uses it.
     bot_startup_time = int(time.time() * 1000)
     logger.info(f"Bot startup timestamp set to: {bot_startup_time}")
+    logger.info("Callbacks are defined using decorators. Starting sync_forever...")
 
-    logger.info("Registering event callbacks...")
-    client.add_event_callback(on_room_invite_callback, RoomMemberEvent)
-    client.add_event_callback(message_handler_callback, RoomMessageText)
-    logger.info("Event callbacks registered.")
-
-    logger.info("Starting sync with server (full_state=True for initial sync)...")
     try:
         # full_state=True on the first run of sync_forever will get initial room states.
         # nio handles the transition from initial sync to subsequent incremental syncs.

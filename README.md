@@ -45,6 +45,7 @@ ALLOWED_INVITER_USER_ID="@adminuser:matrix.org" # Full Matrix User ID of the per
 - `ALLOWED_INVITER_USER_ID`: Crucial for security. This is the full Matrix ID of the user who has permission to invite the bot into rooms. The bot will ignore invites from anyone else.
 - `MATRIX_BOT_ALTS_JSON_PATH` (Optional): Specifies a custom path to the `alts.json` file. If not set, the bot defaults to looking for `sample.config/alts.json` relative to the `matrix_bot.py` script (or `/app/sample.config/alts.json` inside Docker).
 - `MATRIX_BOT_SERVICES_JSON_PATH` (Optional): Specifies a custom path to the `services.json` file. If not set, the bot defaults to looking for `sample.config/services.json` relative to the `matrix_bot.py` script (or `/app/sample.config/services.json` inside Docker).
+- `LOG_LEVEL` (Optional): Sets the logging level for the bot. Valid values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`. Defaults to `INFO` if not set or if an invalid value is provided. For example, set `LOG_LEVEL="DEBUG"` for more verbose output.
 
 The `alts.json` and `services.json` files define the link substitution rules. By default, the bot expects these to be in the `sample.config/` directory. You can customize their location using the environment variables above. Sample files are provided in `sample.config/`.
 
