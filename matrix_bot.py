@@ -205,56 +205,72 @@ async def main():
 
     homeserver = os.environ["HOMESERVER"]
     user_id = os.environ["USER_ID"]
-    password = os.environ["PASSWORD"]
-    device_id = os.environ.get("DEVICE_ID", "linkmatrixbot")
+    # Password is now optional if a store is used and valid
+    password = os.environ.get("PASSWORD")
+    device_id = os.environ.get("DEVICE_ID", "linkmatrixbot") # Used for initial login if no store
 
-    client = AsyncClient(homeserver, user_id, device_id=device_id)
+    store_path_str = os.environ.get("MATRIX_BOT_STORE_PATH")
+    if store_path_str:
+        store_path = pathlib.Path(store_path_str)
+        store_path.mkdir(parents=True, exist_ok=True) # Ensure store directory exists
+        logger.info(f"Using Matrix client store path: {store_path.resolve()}")
+    else:
+        store_path = None
+        logger.info("No MATRIX_BOT_STORE_PATH defined, session will not be persisted.")
 
-    logger.info(f"Attempting to login as {user_id} on {homeserver}...")
-    try:
-        login_response = await client.login(password, device_name=device_id)
-        if isinstance(login_response, LoginError):
-            logger.error(f"Failed to login: {login_response.message}")
+    client = AsyncClient(homeserver, user_id, store_path=store_path, device_id=device_id if not store_path or not (store_path / f"matrix-nio-sync-{user_id.replace(':','_')}.sqlite").exists() else None)
+
+    # Try to load session from store first
+    if client.user_id and client.access_token and client.device_id:
+        logger.info(f"Successfully loaded session for {client.user_id} (device: {client.device_id}) from store.")
+        # Verify token works with a light request, e.g., whoami, or just proceed
+        try:
+            # A light sync can verify the token and get initial state
+            logger.info("Verifying loaded session with an initial sync...")
+            await client.sync_once(timeout=10000, full_state=True) # Short timeout, full state for first sync
+            logger.info("Session verified and initial sync complete.")
+        except Exception as e:
+            logger.warning(f"Loaded session for {client.user_id} might be invalid or sync failed: {e}. Attempting password login if available.", exc_info=True)
+            # Clear potentially bad stored credentials before password login
+            client.access_token = None
+            client.device_id = None # Let login create a new one if needed
+            # Consider clearing the store file if sync fails catastrophically with stored creds
+            if password:
+                logger.info(f"Attempting to login with password for {user_id}...")
+                try:
+                    login_response = await client.login(password, device_name=device_id)
+                    if isinstance(login_response, LoginError):
+                        logger.error(f"Password login failed: {login_response.message}")
+                        return
+                    logger.info("Password login successful. New session will be saved to store.")
+                except Exception as e_login:
+                    logger.error(f"Password login exception: {e_login}", exc_info=True)
+                    return
+            else:
+                logger.error("No password provided to re-authenticate after stored session failed.")
+                return
+        # If sync_once succeeded with stored creds, we are good.
+    elif password:
+        logger.info(f"No valid session in store or first run. Attempting to login with password for {user_id}...")
+        try:
+            login_response = await client.login(password, device_name=device_id)
+            if isinstance(login_response, LoginError):
+                logger.error(f"Password login failed: {login_response.message}")
+                return
+            logger.info("Password login successful. Session will be saved to store if store_path is set.")
+        except Exception as e:
+            logger.error(f"Password login exception: {e}", exc_info=True)
             return
-    except Exception as e:
-        logger.error(f"Login exception: {e}", exc_info=True)
+    else:
+        logger.error("No stored session found and no password provided. Cannot login.")
         return
-
-    logger.info("Login successful!")
-
-    allowed_inviter_user_id = os.environ.get("ALLOWED_INVITER_USER_ID")
-    if not allowed_inviter_user_id:
-        logger.warning("ALLOWED_INVITER_USER_ID not set. Bot will not accept any invites.")
 
     # Initialize bot_startup_time here. It will be set properly before sync_forever.
     bot_startup_time = 0
 
     # Define callbacks as regular async functions
-    async def on_room_invite_callback(room: MatrixRoom, event: RoomMemberEvent):
-        logger.debug("on_room_invite_callback: Entered function.")
-        if event.membership != "invite" or event.state_key != client.user_id:
-            logger.debug(
-                f"on_room_invite_callback: Ignoring event, not an invite for us. "
-                f"Membership: {event.membership}, State Key: {event.state_key} (our user_id: {client.user_id})"
-            )
-            return # Not an invite for us
-
-        logger.info(f"Received invite to room {room.room_id} ({room.display_name}) from {event.sender}")
-
-        if allowed_inviter_user_id and event.sender == allowed_inviter_user_id:
-            logger.info(f"Inviter {event.sender} is authorized. Joining room {room.room_id}")
-            try:
-                await client.join(room.room_id)
-                logger.info(f"Successfully joined room {room.room_id}")
-            except Exception as e:
-                logger.error(f"Failed to join room {room.room_id}: {e}", exc_info=True)
-        else:
-            logger.info(f"Inviter {event.sender} is not authorized. Rejecting invite for room {room.room_id}")
-            try:
-                await client.room_leave(room.room_id)
-                logger.info(f"Successfully rejected (left) room {room.room_id}")
-            except Exception as e:
-                logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
+    # Invitation handling logic is removed.
+    # Bot will only operate in rooms it's already a member of.
 
     async def message_handler_callback(room: MatrixRoom, event: RoomMessageText):
         # This callback reads bot_startup_time from the enclosing main() scope
@@ -305,7 +321,7 @@ async def main():
 
     # Register callbacks explicitly after client login and before starting sync loop
     logger.info("Registering event callbacks...")
-    client.add_event_callback(on_room_invite_callback, RoomMemberEvent)
+    # client.add_event_callback(on_room_invite_callback, RoomMemberEvent) # Removed invite callback
     client.add_event_callback(message_handler_callback, RoomMessageText)
     logger.info("Event callbacks registered.")
 
