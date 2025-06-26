@@ -181,7 +181,6 @@ async def main():
     user_id = os.environ["USER_ID"]
     password = os.environ["PASSWORD"]
     device_id = os.environ.get("DEVICE_ID", "linkmatrixbot")
-    # room_id is removed, bot will auto-join rooms it's invited to by the admin
 
     client = AsyncClient(homeserver, user_id, device_id=device_id)
 
@@ -200,6 +199,10 @@ async def main():
     allowed_inviter_user_id = os.environ.get("ALLOWED_INVITER_USER_ID")
     if not allowed_inviter_user_id:
         logger.warning("ALLOWED_INVITER_USER_ID not set. Bot will not accept any invites.")
+
+    # Initialize bot_startup_time here, before callbacks that might use it are defined.
+    # Though it's set again later, this makes its scope clear.
+    bot_startup_time = 0
 
     # Define callbacks first
     async def on_room_invite_callback(room: MatrixRoom, event: RoomMemberEvent):
@@ -228,11 +231,8 @@ async def main():
             except Exception as e:
                 logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
 
-    # This will be set in main after login
-    bot_startup_time = 0
-
     async def message_handler_callback(room: MatrixRoom, event: RoomMessageText):
-        nonlocal bot_startup_time # Allow modification of the outer scope variable if needed, though here we only read
+        # This callback reads bot_startup_time from the enclosing main() scope
         logger.debug(
             f"Message received in room {room.room_id} ({room.display_name}) | Sender: {event.sender} | Body: {event.body}"
         )
@@ -278,8 +278,7 @@ async def main():
         else:
             logger.debug(f"No replies generated for message from {event.sender} in room {room.room_id}.")
 
-    # Register callbacks immediately after login
-    nonlocal bot_startup_time # Ensure we're assigning to the bot_startup_time in main's scope
+    # Set the actual startup timestamp before registering callbacks that use it
     bot_startup_time = int(time.time() * 1000)
     logger.info(f"Bot startup timestamp set to: {bot_startup_time}")
 
