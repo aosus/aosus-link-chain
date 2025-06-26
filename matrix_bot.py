@@ -5,6 +5,7 @@ import functools
 import pathlib
 import re
 import logging # Added for improved logging
+import time # Added for timestamping
 from urllib.parse import urlparse, urlencode, parse_qs
 
 from dotenv import load_dotenv
@@ -44,10 +45,12 @@ def mk_newlinks(link):
         [str...]    A list of new links.
         [False]     A list with a single False element.
     """
+    logger.debug(f"mk_newlinks: Processing link: {link}")
     if not ALTS or not SERVICES:
-        logger.warning("ALTS or SERVICES not loaded. Link substitution will not work.")
+        logger.warning("mk_newlinks: ALTS or SERVICES not loaded. Link substitution will not work.")
         return [False]
 
+    original_link = link # Keep original for logging
     # Prepare and parse link string
     if not link.startswith("https://") and not link.startswith("http://"):
         link = "https://" + link
@@ -55,25 +58,29 @@ def mk_newlinks(link):
     try:
         url = urlparse(link)
     except ValueError:
+        logger.warning(f"mk_newlinks: Invalid URL '{original_link}' resulted in ValueError during parsing.")
         return [False] # Invalid URL
 
     # Enforce HTTPS
     url = url._replace(scheme="https")
 
     # Recognise service
-    if url.netloc in SERVICES.keys():
+    service = None
+    if url.netloc in SERVICES:
         service = url.netloc
     else:
         for main_domain, service_data in SERVICES.items():
             if url.netloc in service_data.get("alt_domains", []):
                 service = main_domain
                 break
-        else:
-            # Fail if service is unrecognised
-            return [False]
+
+    if not service:
+        logger.debug(f"mk_newlinks: Service not recognized for domain '{url.netloc}' from link '{original_link}'.")
+        return [False]
+    logger.debug(f"mk_newlinks: Recognized service '{service}' for link '{original_link}'.")
 
     # Keep only allowed URL queries
-    allowed_queries = SERVICES[service].get("query_whitelist") or []
+    allowed_queries = SERVICES[service].get("query_whitelist", []) # Ensure it defaults to empty list
     old_queries = parse_qs(url.query, keep_blank_values=True)
     new_queries = {
         query: v for (query, v) in old_queries.items() if query in allowed_queries
@@ -84,8 +91,10 @@ def mk_newlinks(link):
     applicable_alts = {
         altsite: alt for (altsite, alt) in ALTS.items() if alt.get("service") == service
     }
+    logger.debug(f"mk_newlinks: Found applicable_alts: {list(applicable_alts.keys())} for service '{service}'.")
 
     if not applicable_alts:
+        logger.debug(f"mk_newlinks: No applicable alts found for service '{service}' from link '{original_link}'.")
         return [False]
 
     # Make new substitutes
@@ -142,9 +151,25 @@ def load_config_data():
 
 
 def find_links_in_text(text):
-    """Finds URLs in a given text string."""
-    # Basic URL regex, can be improved for more complex cases
-    url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+    """Finds URLs in a given text string.
+    Attempts to find URLs with or without http(s):// prefix.
+    """
+    # This regex looks for:
+    # 1. Optional http:// or https://
+    # 2. Optional www.
+    # 3. A domain name part (sequence of subdomain.domain.tld)
+    # 4. A path part (anything after / that's not whitespace)
+    # It's not perfect and might match things like "file.py" if not careful,
+    # but it's more inclusive. We rely on mk_newlinks to validate if it's a known service.
+    url_pattern = re.compile(
+        r'(?:(?:http[s]?://|ftp://|www\.)|(?:(?!(?:http[s]?|ftp)://|www\.))(?=[a-zA-Z0-9]))'  # Scheme or www, or start of domain
+        r'(?:[a-zA-Z0-9\-]+\.)+(?:[a-zA-Z]{2,})'  # domain.tld
+        r'(?::[0-9]+)?'  # Optional port
+        r'(?:/[^\s]*)?'  # Optional path
+        r'(?=\b|[\s"\'<>]|$)' # Ensure it's a boundary or end of string to avoid matching parts of words
+    )
+    # Previous simpler regex for http(s) only:
+    # url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
     return url_pattern.findall(text)
 
 
@@ -178,7 +203,12 @@ async def main():
 
     # Define callbacks first
     async def on_room_invite_callback(room: MatrixRoom, event: RoomMemberEvent):
+        logger.debug("on_room_invite_callback: Entered function.")
         if event.membership != "invite" or event.state_key != client.user_id:
+            logger.debug(
+                f"on_room_invite_callback: Ignoring event, not an invite for us. "
+                f"Membership: {event.membership}, State Key: {event.state_key} (our user_id: {client.user_id})"
+            )
             return # Not an invite for us
 
         logger.info(f"Received invite to room {room.room_id} ({room.display_name}) from {event.sender}")
@@ -198,28 +228,45 @@ async def main():
             except Exception as e:
                 logger.error(f"Failed to leave (reject) room {room.room_id}: {e}", exc_info=True)
 
+    # This will be set in main after login
+    bot_startup_time = 0
+
     async def message_handler_callback(room: MatrixRoom, event: RoomMessageText):
+        nonlocal bot_startup_time # Allow modification of the outer scope variable if needed, though here we only read
         logger.debug(
             f"Message received in room {room.room_id} ({room.display_name}) | Sender: {event.sender} | Body: {event.body}"
         )
 
+        if event.server_timestamp <= bot_startup_time:
+            logger.debug(f"Ignoring old message from {event.sender} with timestamp {event.server_timestamp} (startup: {bot_startup_time})")
+            return
+
         if event.sender == client.user_id: # Don't reply to our own messages
+            logger.debug("Message is from self, ignoring.")
             return
 
         found_links = find_links_in_text(event.body)
         if not found_links:
+            logger.debug("No links found in message.")
             return
+
+        logger.debug(f"Found links: {found_links}")
 
         replies = []
         for link in found_links:
-            new_links = mk_newlinks(link)
-            if new_links and new_links[0]: # mk_newlinks returns [False] on failure
+            logger.debug(f"Processing link for substitution: {link}")
+            new_links = mk_newlinks(link) # This function now has more logging
+            if new_links and new_links[0] is not False: # Check explicitly for not False
                 substituted_link = new_links[0]
-                reply_text = f"{substituted_link} (source: {link})"
+                logger.debug(f"Substituted link {link} -> {substituted_link}")
+                reply_text = substituted_link # Changed to only send the new link
                 replies.append(reply_text)
+            else:
+                logger.debug(f"No substitution found or mk_newlinks failed for {link}")
 
         if replies:
             full_reply = "\n".join(replies)
+            logger.info(f"Sending reply to room {room.room_id}: {full_reply}")
             try:
                 await client.room_send(
                     room_id=room.room_id,
@@ -228,26 +275,24 @@ async def main():
                 )
             except Exception as e:
                 logger.error(f"Failed to send message to room {room.room_id}: {e}", exc_info=True)
+        else:
+            logger.debug(f"No replies generated for message from {event.sender} in room {room.room_id}.")
 
-    # Perform an initial sync to ensure client is ready
-    logger.info("Performing initial sync with server...")
-    try:
-        await client.sync(timeout=30000, full_state=True)
-        logger.info("Initial sync complete.")
-    except Exception as e:
-        logger.error(f"Error during initial sync: {e}", exc_info=True)
-        await client.close()
-        return
+    # Register callbacks immediately after login
+    nonlocal bot_startup_time # Ensure we're assigning to the bot_startup_time in main's scope
+    bot_startup_time = int(time.time() * 1000)
+    logger.info(f"Bot startup timestamp set to: {bot_startup_time}")
 
-    # Register callbacks after initial sync
     logger.info("Registering event callbacks...")
     client.add_event_callback(on_room_invite_callback, RoomMemberEvent)
     client.add_event_callback(message_handler_callback, RoomMessageText)
     logger.info("Event callbacks registered.")
 
-    logger.info("Starting continuous sync with server...")
+    logger.info("Starting sync with server (full_state=True for initial sync)...")
     try:
-        await client.sync_forever(timeout=30000, full_state=False)  # full_state=False for subsequent syncs
+        # full_state=True on the first run of sync_forever will get initial room states.
+        # nio handles the transition from initial sync to subsequent incremental syncs.
+        await client.sync_forever(timeout=30000, full_state=True)
     except Exception as e:
         logger.error(f"Error during sync_forever: {e}", exc_info=True)
     finally:
