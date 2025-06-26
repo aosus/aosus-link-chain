@@ -8,8 +8,7 @@ services:
       USER_ID: "@linkbot:aosus.org" # The bot's Matrix User ID
       PASSWORD: xxxxxxxxxx # The bot's password
       DEVICE_ID: linkmatrixbot # Optional, will be used for the session
-      ALLOWED_INVITER_USER_ID: '@admin:aosus.org' # IMPORTANT: The Matrix User ID of the user who is allowed to invite this bot to rooms
-      LOG_LEVEL: DEBUG
+#      LOG_LEVEL: DEBUG
     volumes:
       # Mount a directory from the host to persist the Matrix client store.
       # This allows the bot to remember its session (access token, device ID, sync token)
